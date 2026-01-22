@@ -10,6 +10,10 @@ import { AuthService } from 'src/app/core/auth.service';
 })
 export class ModalRegisterComponent {
   registerForm!: FormGroup;
+  roles = [
+  { label: 'Admin', value: 'ADMIN' },
+  { label: 'User', value: 'USER' }
+];
 
   constructor(
     private fb: FormBuilder,

@@ -18,11 +18,18 @@
 
   <div class="field">
     <label for="role">Rol</label>
-    <select id="role" formControlName="role">
+    <!-- <select id="role" formControlName="role">
       <option value="" disabled selected>Selecciona un rol</option>
       <option value="guest">Invitado</option>
       <option value="admin">Administrador</option>
-    </select>
+    </select> -->
+
+    <app-custom-select 
+    placeholder="Rol"
+    [options]="roles"
+    (valueChange)="registerForm.get('role')?.setValue($event)"
+  >
+  </app-custom-select>
   </div>
 </form>
 

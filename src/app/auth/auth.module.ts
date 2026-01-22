@@ -12,9 +12,10 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { LoginComponent } from './components/login/login.component';
 import { ModalRegisterComponent } from './components/modal-register/modal-register.component';
 import { AuthWrapperComponent } from './/auth-wrapper/auth-wrapper.component';
+import { CustomSelectComponent } from '../shared/components/custom-select/custom-select.component';
 
 @NgModule({
-  declarations: [LoginComponent, ModalRegisterComponent, AuthWrapperComponent],
+  declarations: [LoginComponent, ModalRegisterComponent, AuthWrapperComponent ,CustomSelectComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,

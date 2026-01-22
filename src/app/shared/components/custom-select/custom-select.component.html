@@ -1,0 +1,23 @@
+<div class="custom-select" [class.open]="open">
+  <button
+    type="button"
+    class="select-trigger"
+    (click)="toggle()"
+  >
+    <span class="value">
+      {{ selectedLabel || placeholder }}
+    </span>
+    <span class="arrow">▾</span>
+  </button>
+
+  <ul class="select-panel" *ngIf="open">
+    <li
+      *ngFor="let option of options"
+      (click)="select(option)"
+      [class.selected]="option.value === value"
+    >
+      {{ option.label }}
+    </li>
+  </ul>
+</div>
+

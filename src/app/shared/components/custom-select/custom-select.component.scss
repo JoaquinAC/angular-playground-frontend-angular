@@ -1,0 +1,92 @@
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+
+/* Trigger */
+.select-trigger {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    border-color: rgba(255, 123, 34, 0.4);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.value {
+  color: #e0e0e0;
+}
+
+.arrow {
+  color: #bdbdbd;
+  font-size: 0.85rem;
+}
+
+/* Panel */
+.select-panel {
+  position: absolute;
+  top: calc(100% + 0.1rem);
+  left: 0;
+  width: 100%;
+  background: rgba(28, 28, 28, 0.98);
+  border-radius: 12px;
+  padding: 0.35rem 0;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  animation: fadeIn 0.15s ease;
+}
+
+/* Options */
+.select-panel li {
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  color: #e0e0e0;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 123, 34, 0.15);
+  }
+
+  &.selected {
+    background: rgba(255, 123, 34, 0.25);
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chrome / Edge / Safari */
+.custom-select__options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-select__options::-webkit-scrollbar-track {
+  background: #1f2933;
+}
+
+.custom-select__options::-webkit-scrollbar-thumb {
+  background-color: #3b82f6;
+  border-radius: 4px;
+}
