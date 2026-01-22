@@ -1,0 +1,33 @@
+<div class="dashboard-container">
+  <!-- HEADER -->
+  <header class="header">
+    <h1 class="logo">⚡ Angular Playground Lab</h1>
+  </header>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <ul>
+      <li><a routerLink="" routerLinkActive="active">🏠 Home</a></li>
+      <li><a routerLink="/auth">🔐 Auth</a></li>
+      <li><a>🛡️ Guards</a></li>
+      <li><a>⚙️ Interceptors</a></li>
+      <li><a>📡 Observables</a></li>
+      <li><a>🌐 API</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-view">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="log">
+      <span>Última acción:</span> Guard aplicado
+    </div>
+    <div class="log">
+      <span>Token actual:</span> admin-token
+    </div>
+  </footer>
+</div>

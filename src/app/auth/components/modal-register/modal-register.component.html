@@ -1,0 +1,32 @@
+<h2 class="modal-title">Registrar nuevo usuario</h2>
+
+<form [formGroup]="registerForm" class="register-form">
+  <div class="field">
+    <label for="username">Usuario</label>
+    <input id="username" type="text" formControlName="username" />
+  </div>
+
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" />
+  </div>
+
+  <div class="field">
+    <label for="password">Contraseña</label>
+    <input id="password" type="password" formControlName="password" />
+  </div>
+
+  <div class="field">
+    <label for="role">Rol</label>
+    <select id="role" formControlName="role">
+      <option value="" disabled selected>Selecciona un rol</option>
+      <option value="guest">Invitado</option>
+      <option value="admin">Administrador</option>
+    </select>
+  </div>
+</form>
+
+<div class="actions">
+  <button class="btn ghost" (click)="onCancel()">Cancelar</button>
+  <button class="btn primary" (click)="onSubmit()">Registrar</button>
+</div>

@@ -1,0 +1,281 @@
+/* ============================================================
+   LOGIN - STYLES FINAL ORGANIZADOS
+   ============================================================ */
+
+/* ============================================================
+   1. CONTENEDOR GENERAL
+   ============================================================ */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+  background: transparent;
+  font-family: 'Inter', 'Roboto', sans-serif;
+}
+
+/* ============================================================
+   2. CARD PRINCIPAL
+   ============================================================ */
+.auth-card {
+  width: 420px;
+  background: rgba(28, 28, 28, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  border-radius: 16px;
+  padding: 2rem;
+  animation: fadeIn 0.45s ease-in-out;
+  color: #e0e0e0;
+
+  p {
+    margin: 0.25rem 0;
+    color: #cfcfcf;
+    font-size: 0.95rem;
+
+    strong {
+      display: inline-block;
+      margin-left: 0.45rem;
+      font-weight: 700;
+      color: #f5b17a;
+      background: rgba(245,177,122,0.06);
+      padding: 2px 8px;
+      border-radius: 8px;
+      min-width: 40px;
+      text-align: center;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.12);
+    }
+  }
+
+  .divider {
+    margin: 1.4rem 0;
+    border-color: rgba(255,255,255,0.06);
+  }
+}
+
+/* ============================================================
+   3. TÍTULO
+   ============================================================ */
+.auth-title {
+  text-align: center;
+  font-size: 1.6rem;
+  color: #ab5820;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   4. INPUTS / MAT-FORM-FIELD
+   ============================================================ */
+mat-form-field {
+  width: 100%;
+  margin-bottom: 1.2rem;
+  position: relative;
+
+  /* label */
+  ::ng-deep .mat-form-field-label {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-size: 0.85rem !important;
+    color: rgba(210,210,210,0.95) !important;
+    font-weight: 600 !important;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* field background */
+  ::ng-deep .mat-form-field-flex {
+    padding: 0.6rem 0.9rem !important;
+    min-height: 44px !important;
+    position: relative;
+    background: rgba(255, 255, 255, 0.045);
+    border-radius: 10px;
+    transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
+  }
+
+  /* infix */
+  ::ng-deep .mat-form-field-infix {
+    padding-top: 0 !important;
+  }
+
+  /* input text */
+  ::ng-deep .mat-input-element {
+    color: #fff !important;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
+
+  input::placeholder {
+    color: #949494;
+  }
+
+  /* outline */
+  ::ng-deep .mat-form-field-outline {
+    color: rgba(255,255,255,0.08);
+  }
+
+  /* focus */
+  ::ng-deep .mat-form-field.mat-focused .mat-form-field-outline-thick {
+    stroke: rgba(224,122,47,0.95) !important;
+  }
+
+  /* efecto línea inferior animada */
+  ::ng-deep .mat-form-field-flex::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 8px;
+    height: 2px;
+    border-radius: 2px;
+    background: transparent;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 220ms cubic-bezier(.2,.8,.2,1), background 220ms;
+    z-index: 1;
+  }
+
+  ::ng-deep .mat-form-field.mat-focused .mat-form-field-flex::after {
+    background: rgba(224,122,47,0.95);
+    transform: scaleX(1);
+  }
+
+  ::ng-deep .mat-form-field-should-float .mat-form-field-flex::after {
+    transform: scaleX(1);
+    background: rgba(224,122,47,0.55);
+  }
+}
+
+/* NO cortar labels */
+::ng-deep .mat-form-field-wrapper {
+  overflow: visible !important;
+}
+
+/* ============================================================
+   5. BOTONES PRINCIPALES
+   ============================================================ */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 1rem;
+
+  button {
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    transition: all 0.25s ease;
+  }
+
+  /* LOGIN - NARANJA */
+  button[color='primary'] {
+    background: rgba(255, 123, 34, 0.88);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(255, 123, 34, 0.22);
+    backdrop-filter: blur(4px);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255,123,34,0.15);
+    }
+  }
+
+  /*otros botones (inscribir, invitados, etc)*/
+  button[mat-button] {
+    color: #cfcfcf;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+}
+
+/* ============================================================
+   6. TOKEN SECTION
+   ============================================================ */
+.token-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.18);
+  margin-top: 5%;
+
+  h3 {
+    color: #f1904e;
+    font-size: 1.05rem;
+    margin-bottom: 0.8rem;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  mat-form-field {
+    margin-bottom: 0.6rem;
+
+    ::ng-deep .mat-form-field-flex {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0.6rem 0.75rem !important;
+      background: rgba(255,255,255,0.035);
+    }
+
+    /* TOKEN READONLY — versión FINAL que prevalece */
+    ::ng-deep input[readonly].mat-input-element {
+      text-align: center !important;
+      width: 100% !important;
+      color: #e07a2f !important;
+      font-family: monospace;
+      font-weight: 600;
+      height: 36px;
+      line-height: 36px;
+      padding: 0 !important;
+    }
+  }
+}
+
+/* ============================================================
+   7. ANIMACIONES
+   ============================================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+/* BOTONES TOKEN ORIGINALES */
+button[color='accent'] {
+  background: transparent;
+  border: 1px solid #ff7b22;
+  color: #ff7b22;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+
+  &:hover {
+    background: rgba(255, 123, 34, 0.1);
+  }
+}
+
+button[color='warn'] {
+  background: transparent;
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+
+  &:hover {
+    background: rgba(255, 68, 68, 0.1);
+  }
+}

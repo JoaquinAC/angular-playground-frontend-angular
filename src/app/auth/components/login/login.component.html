@@ -1,0 +1,42 @@
+<div class="auth-container">
+  <mat-card class="auth-card">
+    <h2 class="auth-title">Iniciar Sesión</h2>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" floatLabel="auto" class="full-width">
+        <input matInput formControlName="username" placeholder="Ingrese su usuario" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" floatLabel="auto" class="full-width">
+        <input
+          matInput
+          type="password"
+          formControlName="password"
+          placeholder="Ingrese su contraseña"
+        />
+      </mat-form-field>
+
+      <div class="button-group">
+        <button mat-raised-button color="primary" type="submit">Iniciar Sesión</button>
+        <button mat-button type="button" (click)="openRegisterModal()">Registrar Nuevo Usuario</button>
+      </div>
+    </form>
+
+
+    <section class="token-section">
+      <h3>Token Playground</h3>
+      <mat-form-field appearance="fill" class="full-width">
+        <input matInput [value]="currentToken" readonly />
+      </mat-form-field>
+
+      <p><strong>Rol Actual:</strong> {{ currentRole || 'Sin rol asignado' }}</p>
+      <p><strong>Estado:</strong> {{ statusMessage }}</p>
+
+      <div class="button-group">
+        <button mat-stroked-button color="accent" (click)="setGuestToken()">Set Token Invitado</button>
+        <button mat-stroked-button color="warn" (click)="setAdminToken()">Set Token Admin</button>
+      </div>
+    </section>
+  </mat-card>
+</div>
+

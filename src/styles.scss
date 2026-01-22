@@ -1,1 +1,67 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  height: 100%;
+  background: #121212; /* o el fondo de tu app */
+  overflow-x: hidden;
+  overflow: hidden !important;
+}
+
+.cdk-overlay-backdrop.custom-dialog-backdrop {
+  background: rgba(10, 10, 10, 0.7) !important;
+  backdrop-filter: blur(6px);
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2000 !important;
+}
+
+/* El overlay-pane será el contenedor absoluto centrado */
+.cdk-overlay-pane.custom-dialog-panel {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+
+  /* Evitamos que se estire */
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+
+  z-index: 2100 !important;
+  display: block !important;
+  pointer-events: none;
+}
+
+/* Contenedor del modal */
+.cdk-overlay-pane.custom-dialog-panel .mat-dialog-container {
+  pointer-events: auto;
+  margin: 0;
+  background: rgba(28, 28, 28, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 35px rgba(0, 0, 0, 0.75);
+  border-radius: 16px;
+  color: #ffffff;
+  padding: 1.8rem 2rem;
+  backdrop-filter: blur(10px);
+  animation: zoomIn 0.3s ease;
+  width: auto !important;        /* solo lo que el contenido pida */
+  min-width: 320px;              /* tamaño mínimo */
+  max-width: 420px;              /* no más ancho de 420px */
+  max-height: 90vh;              /* nunca salir del viewport */
+  overflow-y: auto;              /* scroll si se llena */
+  box-sizing: border-box;
+}
+
+/* Animación sin translate duplicado */
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
