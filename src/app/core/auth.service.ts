@@ -6,6 +6,7 @@ import { LocalStorageService } from './local-storage.service';
 })
 export class AuthService {
   private usersKey = 'usersMock';
+  private readonly ROLE_KEY = 'user_role';
 
   constructor(private localStorage: LocalStorageService) {
     this.ensureMockUsers();
@@ -43,5 +44,13 @@ export class AuthService {
     const token = `${role}-token-${Math.random().toString(36).substring(2, 8)}`;
     this.localStorage.set('token', token);
     this.localStorage.set('role', role);
+  }
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  getRole(): string | null {
+    return localStorage.getItem(this.ROLE_KEY);
   }
 }

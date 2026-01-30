@@ -1,0 +1,99 @@
+<!-- Guards Test Dashboard -->
+<section class="guards-dashboard" @fadeSlideIn>
+
+  <header class="guards-dashboard__header">
+    <h1 class="guards-dashboard__title">🛡️ Guards Test Dashboard</h1>
+    <p class="guards-dashboard__subtitle">
+      Vista técnica para validación de roles, tokens y comportamiento de Guards
+    </p>
+  </header>
+
+  <!-- Estado actual -->
+  <article class="card card--status">
+    <h2 class="card__title">Estado actual</h2>
+
+    <div class="status-grid">
+      <div class="status-item">
+        <span class="status-label">Token actual</span>
+        <span class="status-value status-value--mono">
+          {{ token || '— Sin token —' }}
+        </span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Rol actual</span>
+        <span
+          class="badge"
+          [ngClass]="{
+            'badge--guest-danger': role === 'guest',
+            'badge--admin-success': role === 'admin'
+          }"
+        >
+          {{  role ? roleLabel : 'ADMIN' }}
+        </span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Estado</span>
+        <span class="status-value">
+          {{
+            hasToken
+              ? 'Token ' + roleLabel + ' asignado en LocalStorage'
+              : 'No existe token en LocalStorage'
+          }}
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <!-- Acciones -->
+  <article class="card card--actions">
+    <h2 class="card__title">Acciones rápidas</h2>
+
+    <div class="actions-row">
+      <button class="btn ghost" (click)="setGuestToken()">Set Token Invitado</button>
+      <button class="btn primary" (click)="setAdminToken()">Set Token Admin</button>
+    </div>
+  </article>
+
+  <!-- Rutas -->
+  <section class="routes-grid">
+
+    <!-- Guest Route -->
+    <article class="card card--route">
+      <h3 class="card__title">Ruta Invitado</h3>
+
+      <p class="card__description">
+        Acceso libre. No requiere token o permite token invitado.
+      </p>
+
+      <ul class="route-rules">
+        <li>✔ Sin token permitido</li>
+        <li>✔ Token invitado permitido</li>
+        <li>✖ Token admin bloqueado</li>
+      </ul>
+
+      <button class="btn ghost" (click)="goToGuest()">Ir a Guest Route</button>
+    </article>
+
+    <!-- Admin Route -->
+    <article class="card card--route">
+      <h3 class="card__title">Ruta Admin</h3>
+
+      <p class="card__description">
+        Ruta protegida. Solo accesible con token administrador válido.
+      </p>
+
+      <ul class="route-rules">
+        <li>✔ Token admin requerido</li>
+        <li>✖ Sin token redirige a /auth</li>
+        <li>✖ Token invitado bloqueado</li>
+      </ul>
+
+      <button class="btn primary" (click)="goToAdmin()">Ir a Admin Route</button>
+    </article>
+
+  </section>
+
+</section>
+<router-outlet></router-outlet>

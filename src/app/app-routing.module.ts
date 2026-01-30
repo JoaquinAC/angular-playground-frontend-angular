@@ -12,6 +12,11 @@ const routes: Routes = [
     loadChildren: () =>
       import('./auth/auth.module').then(m => m.AuthModule),
   },
+  {
+    path: 'guards',
+    loadChildren: () =>
+      import('./guards-section/guards-section.module').then(m => m.GuardsModule),
+  },
   { path: '**', redirectTo: '' },
 ];
 
