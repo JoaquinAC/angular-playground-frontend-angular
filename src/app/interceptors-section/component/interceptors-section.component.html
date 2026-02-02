@@ -1,0 +1,101 @@
+<!-- Interceptors Test Dashboard -->
+<section class="interceptors-dashboard">
+
+  <header class="interceptors-dashboard__header">
+    <h1 class="interceptors-dashboard__title">🌐 HTTP Interceptors Dashboard</h1>
+    <p class="interceptors-dashboard__subtitle">
+      Vista técnica para validación de interceptores HTTP y flujo async
+    </p>
+  </header>
+
+  <!-- Estado HTTP -->
+  <article class="card card--status">
+    <h2 class="card__title">Estado del entorno HTTP</h2>
+
+    <div class="status-grid">
+      <div class="status-item">
+        <span class="status-label">Token activo</span>
+        <span class="status-value status-value--mono">
+          {{ token || '— Sin token —' }}
+        </span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">AuthInterceptor</span>
+        <span class="badge badge--admin-success">Activo</span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">LoaderInterceptor</span>
+        <span class="badge badge--admin-success">Activo</span>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn ghost" (click)="setGuestToken()">
+          Set Token Guest
+        </button>
+
+        <button class="btn primary" (click)="setAdminToken()">
+          Set Token Admin
+        </button>
+      </div>
+    </div>
+  </article>
+
+  <!-- Petición -->
+  <article class="card card--actions">
+    <h2 class="card__title">Petición de prueba</h2>
+
+    <p class="card__description">
+      Endpoint simulado para demostrar headers, loader y manejo global de errores.
+    </p>
+
+    <div class="request-meta">
+      <span><strong>Endpoint:</strong> /api/demo/users</span>
+      <span><strong>Método:</strong> GET</span>
+    </div>
+
+    <button class="btn primary">
+      Enviar petición
+    </button>
+  </article>
+
+  <!-- Estado petición -->
+  <article class="card">
+    <h2 class="card__title">Estado de la petición</h2>
+
+    <ul class="request-status">
+      <li>✔ Header Authorization agregado</li>
+      <li>✔ Loader ON → Loader OFF</li>
+      <li>✔ delay(1000) aplicado</li>
+      <li>✔ finalize() ejecutado</li>
+    </ul>
+  </article>
+
+  <!-- Resultado -->
+  <article class="card">
+    <h2 class="card__title">Resultado</h2>
+
+    <ul class="result-list">
+      <li *ngFor="let user of users">
+        {{ user }}
+      </li>
+    </ul>
+  </article>
+
+  <!-- Errores -->
+  <article class="card card--actions">
+    <h2 class="card__title">Simulación de errores</h2>
+
+    <p class="card__description">
+      Pruebas de manejo global de errores HTTP.
+    </p>
+
+    <div class="actions-row">
+      <button class="btn ghost">Simular 401</button>
+      <button class="btn ghost">Simular 403</button>
+    </div>
+  </article>
+
+</section>
+

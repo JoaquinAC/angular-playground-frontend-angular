@@ -17,6 +17,11 @@ const routes: Routes = [
     loadChildren: () =>
       import('./guards-section/guards-section.module').then(m => m.GuardsModule),
   },
+  {
+    path: 'interceptors',
+    loadChildren: () =>
+      import('./interceptors-section/interceptors-section.module').then(m => m.InterceptorsSectionModule),
+  },
   { path: '**', redirectTo: '' },
 ];
 

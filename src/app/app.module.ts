@@ -4,6 +4,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { RouterModule } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { InterceptorsSectionComponent } from './interceptors-section/component/interceptors-section.component';
 
 @NgModule({
   declarations: [AppComponent],
