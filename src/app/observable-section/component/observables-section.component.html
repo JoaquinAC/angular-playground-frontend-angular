@@ -1,0 +1,83 @@
+<section class="observables-dashboard" @fadeSlideIn>
+
+  <header class="observables-dashboard__header">
+    <h1 class="observables-dashboard__title">🔬 Observables Lab</h1>
+    <p class="observables-dashboard__subtitle">
+      Visualización práctica de estado reactivo y flujos RxJS
+    </p>
+  </header>
+
+  <!-- BehaviorSubject -->
+  <article class="card card--status">
+    <h2 class="card__title">🧠 BehaviorSubject — Estado global</h2>
+
+    <div class="status-grid">
+      <div class="status-item">
+        <span class="status-label">Usuario activo</span>
+        <span class="status-value status-value--mono">
+          {{ user$ | async | json }}
+        </span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Fuente</span>
+        <span class="badge badge--admin">
+          BehaviorSubject
+        </span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Estado</span>
+        <span class="status-value">
+          Último valor disponible para nuevos suscriptores
+        </span>
+      </div>
+
+      <div class="checks-list">
+        <div class="check-item">Usuario activo en tiempo real</div>
+        <div class="check-item">Último valor disponible para nuevos suscriptores</div>
+        <div class="check-item">Actualización global reflejada en todos los componentes</div>
+      </div>
+      
+    </div>
+
+    <div class="actions-row">
+      <button class="btn ghost" (click)="updateUser()">Actualizar Usuario</button>
+      <button class="btn primary" (click)="resetUser()">Reset</button>
+    </div>
+  </article>
+
+  <!-- ReplaySubject -->
+  <article class="card">
+    <h2 class="card__title">📚 ReplaySubject — Historial reactivo</h2>
+
+    <ul class="history-list">
+      <li *ngFor="let user of usersHistory$ | async">
+        {{ user.nombre }} — {{ user.timestamp }}
+      </li>
+    </ul>
+
+    <div class="checks-list">
+      <div class="check-item">Mantiene últimos 5 usuarios emitidos</div>
+      <div class="check-item">Suscripción tardía recibe últimos valores</div>
+      <div class="check-item">Agregar usuarios refleja cambios en la lista</div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn ghost" (click)="addUser()">Agregar nuevo usuario</button>
+    </div>
+  </article>
+
+  <!-- Modal trigger -->
+  <article class="card">
+    <h2 class="card__title">🔎 Flujo reactivo</h2>
+    <p class="card__description">
+      Visualización del stream completo con suscripción tardía y eventos en vivo.
+    </p>
+
+    <button class="btn primary" (click)="openFlowModal()">
+      Abrir modal de flujo en tiempo real
+    </button>
+  </article>
+
+</section>
