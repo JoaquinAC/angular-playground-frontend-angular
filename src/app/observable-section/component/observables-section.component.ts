@@ -53,10 +53,18 @@ export class ObservablesSectionComponent implements OnInit {
   }
 
   openFlowModal(): void {
+   // Evita abrir múltiples instancias
+    const openDialogs = this.dialog.openDialogs;
+    if (openDialogs.length) {
+      openDialogs[0].close();
+    }
+
     this.dialog.open(ObservablesFlowModalComponent, {
-      backdropClass: 'observables-backdrop',
-      panelClass: 'observables-panel',
-      autoFocus: false
-    });
-  }
+    autoFocus: false,
+    restoreFocus: false,
+    disableClose: false,
+    backdropClass: 'custom-dialog-backdrop',
+    panelClass: 'custom-dialog-panel'
+  });
+    }
 }

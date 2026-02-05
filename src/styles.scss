@@ -54,6 +54,12 @@ html, body {
   box-sizing: border-box;
 }
 
+.observables-backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
 /* Animación sin translate duplicado */
 @keyframes zoomIn {
   from {

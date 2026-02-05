@@ -1,22 +1,43 @@
-<section class="observables-modal" @modalFadeSlide>
+<h2 class="observables-title">
+  🔎 Flujo Reactivo en Tiempo Real
+</h2>
 
-  <header class="observables-modal__header">
-    <h2 class="observables-modal__title">🔎 Flujo Reactivo en Tiempo Real</h2>
+<button
+  class="observables-close btn ghost"
+  (click)="close()"
+  aria-label="Cerrar modal"
+>
+  ✕
+</button>
 
-    <button
-      class="observables-modal__close btn ghost"
-      (click)="close()"
-      aria-label="Cerrar modal"
-    >
-      ✕
-    </button>
-  </header>
+<!-- Estado actual -->
+<section class="status-box">
+  <span class="badge active">● ACTIVO</span>
+  <span class="source">Fuente: Subjects</span>
 
-  <div class="observables-modal__content">
-    <!-- Aquí luego entra el stream RxJS -->
-    <p class="placeholder">
-      Esperando eventos del flujo reactivo…
-    </p>
+  <pre class="state">
+{{ activeUser | json }}
+  </pre>
+</section>
+
+<!-- Línea de tiempo -->
+<section class="timeline">
+  <div
+    *ngFor="let step of timeline"
+    class="timeline-node"
+    [class.active]="step.active"
+  >
+    <span>{{ step.label }}</span>
   </div>
+</section>
 
+<!-- Log reactivo -->
+<section class="log-box">
+  <h3>📜 Log reactivo</h3>
+
+  <ul>
+    <li *ngFor="let log of logs">
+      [{{ log.time }}] {{ log.message }}
+    </li>
+  </ul>
 </section>

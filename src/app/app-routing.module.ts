@@ -22,6 +22,11 @@ const routes: Routes = [
     loadChildren: () =>
       import('./interceptors-section/interceptors-section.module').then(m => m.InterceptorsSectionModule),
   },
+  {
+    path: 'observables',
+    loadChildren: () =>
+      import('./observable-section/observable-section.module').then(m => m.ObservableSectionModule),
+  },
   { path: '**', redirectTo: '' },
 ];
 

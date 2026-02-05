@@ -5,10 +5,12 @@ import { AppComponent } from './app.component';
 import { RouterModule } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { InterceptorsSectionComponent } from './interceptors-section/component/interceptors-section.component';
+import { LoaderComponent } from './shared/components/loader/loader.component';
+import { InterceptorsSectionModule } from './interceptors-section/interceptors-section.module';
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule,BrowserAnimationsModule ,AppRoutingModule,RouterModule],
+  declarations: [AppComponent, LoaderComponent],
+  imports: [BrowserModule,BrowserAnimationsModule ,AppRoutingModule,RouterModule, InterceptorsSectionModule],
   providers: [],
   bootstrap: [AppComponent],
 })
