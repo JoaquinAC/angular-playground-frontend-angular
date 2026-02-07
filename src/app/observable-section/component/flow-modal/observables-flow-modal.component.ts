@@ -14,15 +14,15 @@ import { TimelineStep } from '../../model/TimelineStep.model';
 export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
 
   activeUser!: User;
-  history: User[] = [];
   logs: LogEvent[] = [];
+
   timeline: TimelineStep[] = [
-  { operator: 'source', label: 'emit', active: false },
-  { operator: 'map', label: 'map', active: false },
-  { operator: 'filter', label: 'filter', active: false },
-  { operator: 'debounce', label: 'debounce', active: false },
-  { operator: 'subscriber', label: 'subscribe', active: false }
-];
+    { operator: 'source', label: 'emit', active: false },
+    { operator: 'map', label: 'map', active: false },
+    { operator: 'filter', label: 'filter', active: false },
+    { operator: 'debounce', label: 'debounce', active: false },
+    { operator: 'subscriber', label: 'subscribe', active: false }
+  ];
 
   private subs = new Subscription();
 
@@ -33,33 +33,36 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
 
-    this.labService.flowLog$.subscribe(event => {
-    this.timeline = this.timeline.map(step => ({
-      ...step,
-      active: step.operator === event.operator
-    }));
-  });
-
-    // BehaviorSubject → estado actual
+    // Estado actual (BehaviorSubject)
     this.subs.add(
       this.labService.user$.subscribe(user => {
         this.activeUser = user;
-        this.pushLog(`BehaviorSubject → emit(${user.nombre})`);
+        this.activateStep('source');
+        this.pushLog(`BehaviorSubject emit → ${user.nombre}`);
       })
     );
 
-    // ReplaySubject → historial
+    // Historial (ReplaySubject)
     this.subs.add(
       this.labService.usersHistory$.subscribe(history => {
-        this.history = history;
-        this.pushLog(`ReplaySubject → buffer size (${history.length})`);
+        this.pushLog(`ReplaySubject buffer → ${history.length}`);
       })
     );
 
+    // Simulación visual del pipeline RxJS
+    this.subs.add(
+      this.labService.flowLog$.subscribe(event => {
+        this.activateStep(event.operator);
+        this.pushLog(`${event.operator} → ${event.message}`);
+      })
+    );
   }
 
-  close(): void {
-    this.dialogRef.close();
+  private activateStep(operator: string): void {
+    this.timeline = this.timeline.map(step => ({
+      ...step,
+      active: step.operator === operator
+    }));
   }
 
   private pushLog(message: string): void {
@@ -68,9 +71,13 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
       message
     });
 
-    if (this.logs.length > 8) {
+    if (this.logs.length > 10) {
       this.logs.pop();
     }
+  }
+
+  close(): void {
+    this.dialogRef.close();
   }
 
   ngOnDestroy(): void {

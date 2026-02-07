@@ -3,35 +3,39 @@
 </h2>
 
 <button
-  class="observables-close btn ghost"
+  class="observables-close"
   (click)="close()"
   aria-label="Cerrar modal"
 >
   ✕
 </button>
 
-<!-- Estado actual -->
+<!-- ESTADO ACTUAL -->
 <section class="status-box">
-  <span class="badge active">● ACTIVO</span>
-  <span class="source">Fuente: Subjects</span>
+  <div class="status-header">
+    <span class="badge active">● ACTIVO</span>
+    <span class="source">BehaviorSubject</span>
+  </div>
 
   <pre class="state">
 {{ activeUser | json }}
   </pre>
 </section>
 
-<!-- Línea de tiempo -->
+<!-- PIPELINE RXJS -->
 <section class="timeline">
-  <div
-    *ngFor="let step of timeline"
-    class="timeline-node"
-    [class.active]="step.active"
-  >
-    <span>{{ step.label }}</span>
+  <div class="timeline-track">
+    <div
+      *ngFor="let step of timeline"
+      class="timeline-node"
+      [class.active]="step.active"
+    >
+      <span>{{ step.label }}</span>
+    </div>
   </div>
 </section>
 
-<!-- Log reactivo -->
+<!-- LOG -->
 <section class="log-box">
   <h3>📜 Log reactivo</h3>
 
