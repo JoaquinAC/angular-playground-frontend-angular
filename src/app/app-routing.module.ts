@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full',
     loadChildren: () =>
       import('./dashboard/dashboard.module').then(m => m.DashboardModule),
   },
@@ -26,6 +27,11 @@ const routes: Routes = [
     path: 'observables',
     loadChildren: () =>
       import('./observable-section/observable-section.module').then(m => m.ObservableSectionModule),
+  },
+  {
+    path: 'api-section',
+    loadChildren: () =>
+      import('./api-section/api-section.module').then(m => m.ApiSectionModule),
   },
   { path: '**', redirectTo: '' },
 ];

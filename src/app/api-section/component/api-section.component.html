@@ -1,0 +1,99 @@
+<!-- API CRUD Dashboard -->
+<section class="api-dashboard" @fadeSlideIn>
+
+  <header class="api-dashboard__header">
+    <h1 class="api-dashboard__title">📡 API / CRUD Dashboard</h1>
+    <p class="api-dashboard__subtitle">
+      Integración HTTP real con control de roles, interceptores y feedback visual
+    </p>
+  </header>
+
+  <!-- Estado HTTP -->
+  <article class="card card--status">
+    <h2 class="card__title">Estado de la API</h2>
+
+    <div class="status-grid">
+      <div class="status-item">
+        <span class="status-label">Endpoint</span>
+        <span class="status-value status-value--mono">/api/users</span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Último status HTTP</span>
+        <span class="badge badge--admin-success">
+          {{ lastStatus || '—' }}
+        </span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Última acción</span>
+        <span class="status-value">
+          {{ lastAction || '— Sin acciones —' }}
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <!-- Acciones CRUD -->
+  <article class="card card--actions">
+    <h2 class="card__title">Acciones CRUD</h2>
+
+    <div class="actions-row">
+      <button class="btn ghost" (click)="getUsers()">
+        Obtener usuarios
+      </button>
+
+      <button
+        class="btn primary"
+        (click)="createUser()"
+        [disabled]="role !== 'admin'"
+      >
+        Crear usuario
+      </button>
+
+      <button
+        class="btn danger"
+        (click)="deleteAll()"
+        [disabled]="role !== 'admin'"
+      >
+        Eliminar todo
+      </button>
+    </div>
+  </article>
+
+  <!-- Tabla de usuarios -->
+  <article class="card card--table">
+    <h2 class="card__title">Usuarios desde backend</h2>
+
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td class="mono">{{ user.id }}</td>
+          <td>{{ user.name }}</td>
+        </tr>
+
+        <tr *ngIf="!users?.length">
+          <td colspan="2" class="empty">
+            — No hay usuarios —
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+
+  <!-- Respuesta HTTP -->
+  <article class="card card--response">
+    <h2 class="card__title">Respuesta HTTP</h2>
+
+    <pre class="json-viewer">
+{{ lastResponse }}
+    </pre>
+  </article>
+
+</section>

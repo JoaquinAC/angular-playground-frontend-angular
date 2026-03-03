@@ -7,10 +7,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { InterceptorsSectionComponent } from './interceptors-section/component/interceptors-section.component';
 import { LoaderComponent } from './shared/components/loader/loader.component';
 import { InterceptorsSectionModule } from './interceptors-section/interceptors-section.module';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [AppComponent, LoaderComponent],
-  imports: [BrowserModule,BrowserAnimationsModule ,AppRoutingModule,RouterModule, InterceptorsSectionModule],
+  imports: [BrowserModule,BrowserAnimationsModule ,AppRoutingModule,RouterModule, InterceptorsSectionModule,HttpClientModule],
   providers: [],
   bootstrap: [AppComponent],
 })
