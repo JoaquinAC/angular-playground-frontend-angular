@@ -1,0 +1,1460 @@
+diff --git a/src/app/api-section/component/api-section.component.html b/src/app/api-section/component/api-section.component.html
+index ed57ee0..6238c4e 100644
+--- a/src/app/api-section/component/api-section.component.html
++++ b/src/app/api-section/component/api-section.component.html
+@@ -75,7 +75,7 @@
+       <tbody>
+         <tr *ngFor="let user of users">
+           <td class="mono">{{ user.id }}</td>
+-          <td>{{ user.name }}</td>
++          <td>{{ user.username }}</td>
+         </tr>
+ 
+         <tr *ngIf="!users?.length">
+diff --git a/src/app/api-section/component/api-section.component.ts b/src/app/api-section/component/api-section.component.ts
+index cafbbb7..1e905eb 100644
+--- a/src/app/api-section/component/api-section.component.ts
++++ b/src/app/api-section/component/api-section.component.ts
+@@ -1,112 +1,105 @@
+ import { Component, OnInit } from '@angular/core';
+-import { UserResponseDto } from '../models/user-response.dto';
+ import { HttpResponse } from '@angular/common/http';
+-import { UserService } from 'src/app/core/services/api-section/user-service.ts.service';
++import { forkJoin } from 'rxjs';
+ import { animate, style, transition, trigger } from '@angular/animations';
++import { UserResponseDto } from '../models/user-response.dto';
++import { UserService } from 'src/app/core/services/api-section/user-service.ts.service';
++import { AuthService } from 'src/app/core/auth.service';
+ 
+ @Component({
+   selector: 'app-api-section',
+   templateUrl: './api-section.component.html',
+   styleUrls: ['./api-section.component.scss'],
+-  animations: [trigger('fadeSlideIn', [
+-        transition(':enter', [
+-          style({ opacity: 0, transform: 'translateY(8px)' }),
+-          animate(
+-            '220ms ease-out',
+-            style({ opacity: 1, transform: 'translateY(0)' })
+-          )
+-        ])
+-      ])]
++  animations: [
++    trigger('fadeSlideIn', [
++      transition(':enter', [
++        style({ opacity: 0, transform: 'translateY(8px)' }),
++        animate('220ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
++      ]),
++    ]),
++  ],
+ })
+ export class ApiSectionComponent implements OnInit {
+-
+-  
+   users: UserResponseDto[] = [];
+-
+-  lastResponse: any = null;
++  lastResponse: unknown = null;
+   lastStatus: number | null = null;
+   lastAction: string | null = null;
+-
+   role: 'admin' | 'guest' | null = null;
+ 
+-  constructor(private userService: UserService) {}
++  constructor(
++    private userService: UserService,
++    private authService: AuthService,
++  ) {}
+ 
+   ngOnInit(): void {
+     this.resolveRole();
+   }
+ 
+-  /* ===========================
+-     ROLE RESOLUTION
+-  ============================ */
+-
+   private resolveRole(): void {
+-    const storedRole = localStorage.getItem('role');
+-
+-    if (storedRole === 'admin' || storedRole === 'guest') {
+-      this.role = storedRole;
+-    } else {
+-      this.role = 'guest';
+-    }
++    this.role = this.authService.getRole() ?? 'guest';
+   }
+ 
+-  /* ===========================
+-     CRUD ACTIONS
+-  ============================ */
+-
+   getUsers(): void {
+-    this.userService.getUsers()
+-      .subscribe({
+-        next: (res: HttpResponse<UserResponseDto[]>) => {
+-          this.users = res.body || [];
+-          this.lastResponse = res.body;
+-          this.lastStatus = res.status;
+-          this.lastAction = 'Usuarios obtenidos correctamente';
+-        },
+-        error: (err: { status: number | null; error: any; }) => {
+-          this.lastStatus = err.status;
+-          this.lastResponse = err.error;
+-          this.lastAction = 'Error al obtener usuarios';
+-        }
+-      });
++    this.userService.getUsers().subscribe({
++      next: (res: HttpResponse<UserResponseDto[]>) => {
++        this.users = res.body || [];
++        this.lastResponse = res.body;
++        this.lastStatus = res.status;
++        this.lastAction = 'Usuarios obtenidos correctamente';
++      },
++      error: (err: { status: number | null; error: unknown }) => {
++        this.lastStatus = err.status;
++        this.lastResponse = err.error;
++        this.lastAction = 'Error al obtener usuarios';
++      },
++    });
+   }
+ 
+   createUser(): void {
+     if (this.role !== 'admin') return;
+ 
+-    const payload = { name: 'Nuevo Usuario' };
+-
+-    this.userService.createUser(payload)
+-      .subscribe({
+-        next: (res: HttpResponse<UserResponseDto>) => {
+-          this.lastStatus = res.status;
+-          this.lastResponse = res.body;
+-          this.lastAction = 'Usuario creado con éxito';
+-          this.getUsers();
+-        },
+-        error: (err: { status: number | null; error: any; }) => {
+-          this.lastStatus = err.status;
+-          this.lastResponse = err.error;
+-          this.lastAction = 'Error al crear usuario';
+-        }
+-      });
++    const unique = Date.now();
++    const payload = {
++      username: `guest_${unique}`,
++      email: `guest_${unique}@test.com`,
++      password: '123456',
++    };
++
++    this.userService.createUser(payload).subscribe({
++      next: (res: HttpResponse<UserResponseDto>) => {
++        this.lastStatus = res.status;
++        this.lastResponse = res.body;
++        this.lastAction = 'Usuario creado con éxito';
++        this.getUsers();
++      },
++      error: (err: { status: number | null; error: unknown }) => {
++        this.lastStatus = err.status;
++        this.lastResponse = err.error;
++        this.lastAction = 'Error al crear usuario';
++      },
++    });
+   }
+ 
+   deleteAll(): void {
+     if (this.role !== 'admin') return;
+ 
+-    this.userService.deleteAll()
+-      .subscribe({
+-        next: (res: HttpResponse<void>) => {
+-          this.users = [];
+-          this.lastStatus = res.status;
+-          this.lastResponse = null;
+-          this.lastAction = 'Todos los usuarios eliminados';
+-        },
+-        error: (err: { status: number | null; error: any; }) => {
+-          this.lastStatus = err.status;
+-          this.lastResponse = err.error;
+-          this.lastAction = 'Error al eliminar usuarios';
+-        }
+-      });
++    if (!this.users.length) {
++      this.lastAction = 'No hay usuarios para eliminar';
++      return;
++    }
++
++    forkJoin(this.users.map(user => this.userService.deleteUser(user.id))).subscribe({
++      next: () => {
++        this.users = [];
++        this.lastStatus = 204;
++        this.lastResponse = null;
++        this.lastAction = 'Todos los usuarios eliminados';
++      },
++      error: (err: { status: number | null; error: unknown }) => {
++        this.lastStatus = err.status;
++        this.lastResponse = err.error;
++        this.lastAction = 'Error al eliminar usuarios';
++      },
++    });
+   }
+ }
+diff --git a/src/app/api-section/models/create-user-request.dto.ts b/src/app/api-section/models/create-user-request.dto.ts
+index b0b456a..c51c23f 100644
+--- a/src/app/api-section/models/create-user-request.dto.ts
++++ b/src/app/api-section/models/create-user-request.dto.ts
+@@ -1,3 +1,5 @@
+ export interface CreateUserRequestDto {
+-  name: string;
++  username: string;
++  email: string;
++  password: string;
+ }
+diff --git a/src/app/api-section/models/user-response.dto.ts b/src/app/api-section/models/user-response.dto.ts
+index 9a5f521..1766b54 100644
+--- a/src/app/api-section/models/user-response.dto.ts
++++ b/src/app/api-section/models/user-response.dto.ts
+@@ -1,4 +1,7 @@
+ export interface UserResponseDto {
+   id: number;
+-  name: string;
+-}
+\ No newline at end of file
++  username: string;
++  email: string;
++  role: 'ADMIN' | 'GUEST';
++  createdAt: string;
++}
+diff --git a/src/app/app-routing.module.ts b/src/app/app-routing.module.ts
+index 82245b3..e416d12 100644
+--- a/src/app/app-routing.module.ts
++++ b/src/app/app-routing.module.ts
+@@ -1,5 +1,6 @@
+ import { NgModule } from '@angular/core';
+ import { RouterModule, Routes } from '@angular/router';
++import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+ 
+ const routes: Routes = [
+   {
+@@ -33,6 +34,10 @@ const routes: Routes = [
+     loadChildren: () =>
+       import('./api-section/api-section.module').then(m => m.ApiSectionModule),
+   },
++  {
++    path: 'unauthorized',
++    component: UnauthorizedComponent,
++  },
+   { path: '**', redirectTo: '' },
+ ];
+ 
+diff --git a/src/app/app.module.ts b/src/app/app.module.ts
+index 48cf885..2fbe4ce 100644
+--- a/src/app/app.module.ts
++++ b/src/app/app.module.ts
+@@ -1,18 +1,50 @@
++import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+ import { NgModule } from '@angular/core';
+ import { BrowserModule } from '@angular/platform-browser';
++import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
++import { MatSnackBarModule } from '@angular/material/snack-bar';
++import { RouterModule } from '@angular/router';
+ import { AppRoutingModule } from './app-routing.module';
+ import { AppComponent } from './app.component';
+-import { RouterModule } from '@angular/router';
+-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+-import { InterceptorsSectionComponent } from './interceptors-section/component/interceptors-section.component';
++import { AuthInterceptor } from './interceptors-section/interceptors/auth.interceptor';
++import { CacheInterceptor } from './interceptors-section/interceptors/cache.interceptor';
++import { ErrorInterceptor } from './interceptors-section/interceptors/error.interceptor';
++import { LoaderInterceptor } from './interceptors-section/interceptors/loader.interceptor';
+ import { LoaderComponent } from './shared/components/loader/loader.component';
+-import { InterceptorsSectionModule } from './interceptors-section/interceptors-section.module';
+-import { HttpClientModule } from '@angular/common/http';
++import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+ 
+ @NgModule({
+-  declarations: [AppComponent, LoaderComponent],
+-  imports: [BrowserModule,BrowserAnimationsModule ,AppRoutingModule,RouterModule, InterceptorsSectionModule,HttpClientModule],
+-  providers: [],
++  declarations: [AppComponent, LoaderComponent, UnauthorizedComponent],
++  imports: [
++    BrowserModule,
++    BrowserAnimationsModule,
++    AppRoutingModule,
++    RouterModule,
++    HttpClientModule,
++    MatSnackBarModule,
++  ],
++  providers: [
++    {
++      provide: HTTP_INTERCEPTORS,
++      useClass: AuthInterceptor,
++      multi: true,
++    },
++    {
++      provide: HTTP_INTERCEPTORS,
++      useClass: CacheInterceptor,
++      multi: true,
++    },
++    {
++      provide: HTTP_INTERCEPTORS,
++      useClass: LoaderInterceptor,
++      multi: true,
++    },
++    {
++      provide: HTTP_INTERCEPTORS,
++      useClass: ErrorInterceptor,
++      multi: true,
++    },
++  ],
+   bootstrap: [AppComponent],
+ })
+ export class AppModule {}
+diff --git a/src/app/auth/components/login/login.component.ts b/src/app/auth/components/login/login.component.ts
+index fa5bea6..0362eea 100644
+--- a/src/app/auth/components/login/login.component.ts
++++ b/src/app/auth/components/login/login.component.ts
+@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+ import { MatDialog } from '@angular/material/dialog';
+ import { MatSnackBar } from '@angular/material/snack-bar';
+ import { AuthService } from 'src/app/core/auth.service';
++import { AppRole } from 'src/app/core/models/auth/auth.models';
+ import { LocalStorageService } from 'src/app/core/local-storage.service';
+ import { ModalRegisterComponent } from '../modal-register/modal-register.component';
+ 
+@@ -16,8 +17,6 @@ export class LoginComponent implements OnInit {
+   currentToken: string | null = '';
+   currentRole: string | null = '';
+   statusMessage = '';
+-  showNotif = false;
+-  notifMessage = '';
+ 
+   constructor(
+     private fb: FormBuilder,
+@@ -40,19 +39,31 @@ export class LoginComponent implements OnInit {
+   }
+ 
+   private loadTokenData(): void {
+-    this.currentToken = this.localStorage.get('token');
+-    this.currentRole = this.localStorage.get('role');
++    this.currentToken = this.localStorage.get<string>('token');
++    this.currentRole = this.localStorage.get<string>('role');
+     this.statusMessage = this.currentRole
+       ? `Token ${this.currentRole.toUpperCase()} asignado en LocalStorage`
+       : 'Sin token asignado';
+   }
+ 
+-onSubmit(): void {
+-  if (this.loginForm.invalid) {
+-    return;
++  onSubmit(): void {
++    if (this.loginForm.invalid) {
++      return;
++    }
++
++    this.authService.login(this.loginForm.value).subscribe({
++      next: () => {
++        this.loadTokenData();
++        this.snackBar.open('Login exitoso', 'Cerrar', { duration: 2000 });
++      },
++      error: () => {
++        this.snackBar.open('No se pudo iniciar sesión', 'Cerrar', {
++          duration: 2500,
++        });
++      },
++    });
+   }
+-   alert("Login exitoso");
+-}
++
+   openRegisterModal(): void {
+     if (this.dialog.openDialogs.length > 0) return;
+ 
+@@ -60,36 +71,38 @@ onSubmit(): void {
+       width: '400px',
+       panelClass: 'custom-dialog-panel',
+       backdropClass: 'custom-dialog-backdrop',
+-      disableClose: true, // Bloquea cierre accidental
+-      autoFocus: false, // Evita conflictos de focus
++      disableClose: true,
++      autoFocus: false,
+     });
+ 
+-    dialogRef.afterClosed().subscribe((result) => {
++    dialogRef.afterClosed().subscribe(result => {
+       if (result) {
+-        this.snackBar.open('Usuario creado con éxito', 'Cerrar', { duration: 2500 });
++        this.snackBar.open('Usuario creado con éxito', 'Cerrar', {
++          duration: 2500,
++        });
+       }
+     });
+   }
+ 
+   setGuestToken(): void {
+-    const role = this.localStorage.get('role');
+-    if (role === 'guest') {
+-      this.snackBar.open('Ya eres Invitado', 'Cerrar', { duration: 2000 });
+-      return;
+-    }
+-    this.authService.setToken('guest');
+-    this.loadTokenData();
+-    this.snackBar.open('Token Invitado asignado', 'Cerrar', { duration: 2000 });
++    this.switchRole('guest');
+   }
+ 
+   setAdminToken(): void {
+-    const role = this.localStorage.get('role');
+-    if (role === 'admin') {
+-      this.snackBar.open('Ya eres Admin', 'Cerrar', { duration: 2000 });
+-      return;
+-    }
+-    this.authService.setToken('admin');
+-    this.loadTokenData();
+-    this.snackBar.open('Token Admin asignado', 'Cerrar', { duration: 2000 });
++    this.switchRole('admin');
+   }
+-}
+\ No newline at end of file
++
++  private switchRole(role: AppRole): void {
++    this.authService.loginAsRole(role).subscribe({
++      next: () => {
++        this.loadTokenData();
++        this.snackBar.open(`Token ${role.toUpperCase()} asignado`, 'Cerrar', {
++          duration: 2000,
++        });
++      },
++      error: (error: Error) => {
++        this.snackBar.open(error.message, 'Cerrar', { duration: 3000 });
++      },
++    });
++  }
++}
+diff --git a/src/app/auth/components/modal-register/modal-register.component.ts b/src/app/auth/components/modal-register/modal-register.component.ts
+index e66f44d..68e5f21 100644
+--- a/src/app/auth/components/modal-register/modal-register.component.ts
++++ b/src/app/auth/components/modal-register/modal-register.component.ts
+@@ -1,6 +1,7 @@
+ import { Component } from '@angular/core';
+ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+ import { MatDialogRef } from '@angular/material/dialog';
++import { MatSnackBar } from '@angular/material/snack-bar';
+ import { AuthService } from 'src/app/core/auth.service';
+ 
+ @Component({
+@@ -11,29 +12,42 @@ import { AuthService } from 'src/app/core/auth.service';
+ export class ModalRegisterComponent {
+   registerForm!: FormGroup;
+   roles = [
+-  { label: 'Admin', value: 'ADMIN' },
+-  { label: 'User', value: 'USER' }
+-];
++    { label: 'Admin', value: 'ADMIN' },
++    { label: 'User', value: 'GUEST' },
++  ];
+ 
+   constructor(
+     private fb: FormBuilder,
+     private dialogRef: MatDialogRef<ModalRegisterComponent>,
+-    private authService: AuthService
++    private authService: AuthService,
++    private snackBar: MatSnackBar,
+   ) {
+     this.registerForm = this.fb.group({
+       username: ['', Validators.required],
+       email: ['', [Validators.required, Validators.email]],
+       password: ['', Validators.required],
+-      role: ['guest', Validators.required],
++      role: ['GUEST', Validators.required],
+     });
+   }
+-  
++
+   onSubmit(): void {
+-  if (this.registerForm.invalid) {
+-    return;
++    if (this.registerForm.invalid) {
++      return;
++    }
++
++    const { username, email, password } = this.registerForm.value;
++
++    this.authService.register({ username, email, password }).subscribe({
++      next: () => {
++        this.dialogRef.close(true);
++      },
++      error: () => {
++        this.snackBar.open('No se pudo registrar el usuario', 'Cerrar', {
++          duration: 2500,
++        });
++      },
++    });
+   }
+-   alert("Login exitoso");
+-}
+ 
+   onCancel(): void {
+     this.dialogRef.close(false);
+diff --git a/src/app/core/auth.service.ts b/src/app/core/auth.service.ts
+index 7d7e1d7..81e1e05 100644
+--- a/src/app/core/auth.service.ts
++++ b/src/app/core/auth.service.ts
+@@ -1,56 +1,114 @@
++import { HttpClient } from '@angular/common/http';
+ import { Injectable } from '@angular/core';
++import { Observable, throwError } from 'rxjs';
++import { map, switchMap, tap } from 'rxjs/operators';
++import { environment } from 'src/environments/environment';
++import {
++  AppRole,
++  LoginRequestDto,
++  LoginResponseDto,
++  RegisterRequestDto,
++  SessionUser,
++  UserProfileDto,
++} from './models/auth/auth.models';
+ import { LocalStorageService } from './local-storage.service';
+ 
+ @Injectable({
+   providedIn: 'root',
+ })
+ export class AuthService {
+-  private usersKey = 'usersMock';
+-  private readonly ROLE_KEY = 'user_role';
++  private readonly TOKEN_KEY = 'token';
++  private readonly SESSION_USER_KEY = 'session_user';
++  private readonly ROLE_KEY = 'role';
++  private readonly apiUrl = `${environment.apiBaseUrl}/auth`;
+ 
+-  constructor(private localStorage: LocalStorageService) {
+-    this.ensureMockUsers();
++  constructor(
++    private http: HttpClient,
++    private localStorage: LocalStorageService,
++  ) {}
++
++  login(dto: LoginRequestDto): Observable<SessionUser> {
++    return this.http.post<LoginResponseDto>(`${this.apiUrl}/login`, dto).pipe(
++      switchMap(({ token }) => {
++        this.setToken(token);
++        return this.getMe().pipe(
++          map(profile => this.mapProfileToSessionUser(profile)),
++          tap(sessionUser => this.persistSessionUser(sessionUser)),
++        );
++      }),
++    );
+   }
+ 
+-  private ensureMockUsers(): void {
+-    const users = this.localStorage.get(this.usersKey);
+-    if (!users) {
+-      this.localStorage.set(this.usersKey, []);
+-    }
++  register(dto: RegisterRequestDto): Observable<unknown> {
++    return this.http.post(`${this.apiUrl}/register`, dto);
+   }
+ 
+-  login(username: string, password: string): { success: boolean; message: string } {
+-    // Caso especial de error forzado
+-    if (username === 'admin' && password === 'admin') {
+-      return { success: false, message: 'Error: credenciales inválidas (modo simulado)' };
+-    }
++  getMe(): Observable<UserProfileDto> {
++    return this.http.get<UserProfileDto>(`${this.apiUrl}/me`);
++  }
+ 
+-    const users = this.localStorage.get(this.usersKey) || [];
+-    const found = users.find((u: any) => u.username === username && u.password === password);
++  loginAsRole(role: AppRole): Observable<SessionUser> {
++    const credentials = environment.demoCredentials[role];
+ 
+-    const role = found ? found.role : 'guest';
+-    this.setToken(role);
++    if (!credentials.username || !credentials.password) {
++      return throwError(
++        () =>
++          new Error(
++            `Credenciales demo para ${role.toUpperCase()} no configuradas en environment`,
++          ),
++      );
++    }
+ 
+-    return { success: true, message: 'Login exitoso' };
++    return this.login({
++      username: credentials.username,
++      password: credentials.password,
++    });
+   }
+ 
+-  register(user: any): void {
+-    const users = this.localStorage.get(this.usersKey) || [];
+-    users.push(user);
+-    this.localStorage.set(this.usersKey, users);
++  setToken(token: string): void {
++    this.localStorage.set(this.TOKEN_KEY, token);
+   }
+ 
+-  setToken(role: string): void {
+-    const token = `${role}-token-${Math.random().toString(36).substring(2, 8)}`;
+-    this.localStorage.set('token', token);
+-    this.localStorage.set('role', role);
++  getToken(): string | null {
++    return this.localStorage.get(this.TOKEN_KEY);
++  }
++
++  clearSession(): void {
++    this.localStorage.remove(this.TOKEN_KEY);
++    this.localStorage.remove(this.SESSION_USER_KEY);
++    this.localStorage.remove(this.ROLE_KEY);
+   }
+ 
+   isAuthenticated(): boolean {
+-    return !!localStorage.getItem('token');
++    return !!this.getToken();
++  }
++
++  getRole(): AppRole | null {
++    return this.localStorage.get(this.ROLE_KEY);
+   }
+ 
+-  getRole(): string | null {
+-    return localStorage.getItem(this.ROLE_KEY);
++  getSessionUser(): SessionUser | null {
++    return this.localStorage.get(this.SESSION_USER_KEY);
++  }
++
++  private persistSessionUser(user: SessionUser): void {
++    this.localStorage.set(this.SESSION_USER_KEY, user);
++    this.localStorage.set(this.ROLE_KEY, user.role);
++  }
++
++  private mapProfileToSessionUser(profile: UserProfileDto): SessionUser {
++    const role = this.normalizeRole(profile.authorities?.[0]?.authority);
++    return {
++      username: profile.username,
++      role,
++    };
++  }
++
++  private normalizeRole(role: string | undefined): AppRole {
++    if (role === 'ROLE_ADMIN' || role === 'ADMIN') {
++      return 'admin';
++    }
++
++    return 'guest';
+   }
+ }
+diff --git a/src/app/core/local-storage.service.ts b/src/app/core/local-storage.service.ts
+index 021fab2..97db902 100644
+--- a/src/app/core/local-storage.service.ts
++++ b/src/app/core/local-storage.service.ts
+@@ -4,16 +4,21 @@ import { Injectable } from '@angular/core';
+   providedIn: 'root',
+ })
+ export class LocalStorageService {
+-  set(key: string, value: any): void {
++  set<T>(key: string, value: T): void {
+     localStorage.setItem(key, JSON.stringify(value));
+   }
+ 
+-  get(key: string): any {
++  get<T>(key: string): T | null {
+     const data = localStorage.getItem(key);
++
++    if (!data) {
++      return null;
++    }
++
+     try {
+-      return data ? JSON.parse(data) : null;
++      return JSON.parse(data) as T;
+     } catch {
+-      return data;
++      return data as unknown as T;
+     }
+   }
+ 
+diff --git a/src/app/core/models/auth/auth.models.ts b/src/app/core/models/auth/auth.models.ts
+new file mode 100644
+index 0000000..5214968
+--- /dev/null
++++ b/src/app/core/models/auth/auth.models.ts
+@@ -0,0 +1,26 @@
++export type AppRole = 'admin' | 'guest';
++
++export interface LoginRequestDto {
++  username: string;
++  password: string;
++}
++
++export interface LoginResponseDto {
++  token: string;
++}
++
++export interface RegisterRequestDto {
++  username: string;
++  email: string;
++  password: string;
++}
++
++export interface UserProfileDto {
++  username: string;
++  authorities: Array<{ authority: string }>;
++}
++
++export interface SessionUser {
++  username: string;
++  role: AppRole;
++}
+diff --git a/src/app/core/models/users/user.models.ts b/src/app/core/models/users/user.models.ts
+new file mode 100644
+index 0000000..f18bd6e
+--- /dev/null
++++ b/src/app/core/models/users/user.models.ts
+@@ -0,0 +1,13 @@
++export interface UserResponseDto {
++  id: number;
++  username: string;
++  email: string;
++  role: 'ADMIN' | 'GUEST';
++  createdAt: string;
++}
++
++export interface RegisterUserRequestDto {
++  username: string;
++  email: string;
++  password: string;
++}
+diff --git a/src/app/core/services/api-section/user-service.ts.service.ts b/src/app/core/services/api-section/user-service.ts.service.ts
+index 2ace74d..40527bc 100644
+--- a/src/app/core/services/api-section/user-service.ts.service.ts
++++ b/src/app/core/services/api-section/user-service.ts.service.ts
+@@ -3,57 +3,35 @@ import { Injectable } from '@angular/core';
+ import { Observable } from 'rxjs';
+ import { CreateUserRequestDto } from 'src/app/api-section/models/create-user-request.dto';
+ import { UserResponseDto } from 'src/app/api-section/models/user-response.dto';
++import { environment } from 'src/environments/environment';
+ 
+ @Injectable({
+-  providedIn: 'root'
++  providedIn: 'root',
+ })
+ export class UserService {
+-  private readonly API_URL = '/api/users';
++  private readonly usersUrl = `${environment.apiBaseUrl}/users`;
++  private readonly registerUrl = `${environment.apiBaseUrl}/auth/register`;
+ 
+   constructor(private http: HttpClient) {}
+ 
+-  /* ===========================
+-     GET USERS
+-  ============================ */
+-
+- getUsers(): Observable<HttpResponse<UserResponseDto[]>> {
+-    return this.http.get<UserResponseDto[]>(
+-      this.API_URL,
+-      {
+-        observe: 'response',
+-        responseType: 'json'
+-      }
+-    );
++  getUsers(): Observable<HttpResponse<UserResponseDto[]>> {
++    return this.http.get<UserResponseDto[]>(this.usersUrl, {
++      observe: 'response',
++      responseType: 'json',
++    });
+   }
+ 
+-  /* ===========================
+-     CREATE USER (ADMIN)
+-  ============================ */
+-
+-   createUser(
+-    dto: CreateUserRequestDto
+-  ): Observable<HttpResponse<UserResponseDto>> {
+-    return this.http.post<UserResponseDto>(
+-      this.API_URL,
+-      dto,
+-      {
+-        observe: 'response',
+-        responseType: 'json'
+-      }
+-    );
++  createUser(dto: CreateUserRequestDto): Observable<HttpResponse<UserResponseDto>> {
++    return this.http.post<UserResponseDto>(this.registerUrl, dto, {
++      observe: 'response',
++      responseType: 'json',
++    });
+   }
+ 
+-  /* ===========================
+-     DELETE ALL USERS (ADMIN)
+-  ============================ */
+-
+-  deleteAll(): Observable<HttpResponse<void>> {
+-    return this.http.delete<void>(
+-      this.API_URL,
+-      {
+-        observe: 'response',
+-        responseType: 'json'
+-      }
+-    );
++  deleteUser(id: number): Observable<HttpResponse<void>> {
++    return this.http.delete<void>(`${this.usersUrl}/${id}`, {
++      observe: 'response',
++      responseType: 'json',
++    });
+   }
+ }
+diff --git a/src/app/core/services/interceptors-section/interceptor-test.service.ts b/src/app/core/services/interceptors-section/interceptor-test.service.ts
+index d6e17b4..1bd2095 100644
+--- a/src/app/core/services/interceptors-section/interceptor-test.service.ts
++++ b/src/app/core/services/interceptors-section/interceptor-test.service.ts
+@@ -1,23 +1,26 @@
++import { HttpClient } from '@angular/common/http';
+ import { Injectable } from '@angular/core';
+-import { Observable, of, throwError } from 'rxjs';
+-import { delay } from 'rxjs/operators';
++import { Observable } from 'rxjs';
++import { UserResponseDto } from '../../models/users/user.models';
++import { environment } from 'src/environments/environment';
+ 
+ @Injectable({
+-  providedIn: 'root'
++  providedIn: 'root',
+ })
+ export class InterceptorTestService {
++  private readonly apiUrl = environment.apiBaseUrl;
+ 
+-  constructor() { }
++  constructor(private http: HttpClient) {}
+ 
+-  getUsers(): Observable<string[]> {
+-    return of(['user_1', 'user_2']).pipe(delay(1000));
++  getUsers(): Observable<UserResponseDto[]> {
++    return this.http.get<UserResponseDto[]>(`${this.apiUrl}/users`);
+   }
+ 
+-  simulate401(): Observable<never> {
+-    return throwError({ status: 401 }).pipe(delay(500));
++  simulate401(): Observable<unknown> {
++    return this.http.get(`${this.apiUrl}/demo/401`);
+   }
+ 
+-  simulate403(): Observable<never> {
+-    return throwError({ status: 403 }).pipe(delay(500));
++  simulate403(): Observable<unknown> {
++    return this.http.get(`${this.apiUrl}/demo/403`);
+   }
+ }
+diff --git a/src/app/core/services/interceptors-section/notification.service.ts b/src/app/core/services/interceptors-section/notification.service.ts
+index add74f5..211ffa9 100644
+--- a/src/app/core/services/interceptors-section/notification.service.ts
++++ b/src/app/core/services/interceptors-section/notification.service.ts
+@@ -1,9 +1,17 @@
+ import { Injectable } from '@angular/core';
++import { MatSnackBar } from '@angular/material/snack-bar';
+ 
+ @Injectable({
+-  providedIn: 'root'
++  providedIn: 'root',
+ })
+ export class NotificationService {
++  constructor(private snackBar: MatSnackBar) {}
+ 
+-  constructor() { }
++  error(message: string): void {
++    this.snackBar.open(message, 'Cerrar', { duration: 3000 });
++  }
++
++  success(message: string): void {
++    this.snackBar.open(message, 'Cerrar', { duration: 2200 });
++  }
+ }
+diff --git a/src/app/guards-section/components/guards-section/guards-section.component.ts b/src/app/guards-section/components/guards-section/guards-section.component.ts
+index f4b2028..0e36a26 100644
+--- a/src/app/guards-section/components/guards-section/guards-section.component.ts
++++ b/src/app/guards-section/components/guards-section/guards-section.component.ts
+@@ -1,6 +1,9 @@
+ import { animate, style, transition, trigger } from '@angular/animations';
+ import { Component, OnInit } from '@angular/core';
++import { MatSnackBar } from '@angular/material/snack-bar';
+ import { ActivatedRoute, Router } from '@angular/router';
++import { AuthService } from 'src/app/core/auth.service';
++import { AppRole } from 'src/app/core/models/auth/auth.models';
+ 
+ @Component({
+   selector: 'app-guards-section',
+@@ -10,26 +13,27 @@ import { ActivatedRoute, Router } from '@angular/router';
+     trigger('fadeSlideIn', [
+       transition(':enter', [
+         style({ opacity: 0, transform: 'translateY(8px)' }),
+-        animate(
+-          '220ms ease-out',
+-          style({ opacity: 1, transform: 'translateY(0)' })
+-        )
+-      ])
+-    ])
+-  ]
++        animate('220ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
++      ]),
++    ]),
++  ],
+ })
+ export class GuardsSectionComponent implements OnInit {
++  token: string | null = null;
++  role: AppRole | null = null;
+ 
+-  constructor(private router: Router , private route: ActivatedRoute) { }
+-  
+-  token: string | null = null
+-  role: 'guest' | 'admin' | null = 'guest';
++  constructor(
++    private router: Router,
++    private route: ActivatedRoute,
++    private authService: AuthService,
++    private snackBar: MatSnackBar,
++  ) {}
+ 
+   ngOnInit(): void {
+     this.syncState();
+   }
+ 
+-    goToAdmin(): void {
++  goToAdmin(): void {
+     this.router.navigate(['/guards/admin-dashboard'], { relativeTo: this.route });
+   }
+ 
+@@ -38,27 +42,30 @@ export class GuardsSectionComponent implements OnInit {
+   }
+ 
+   private syncState(): void {
+-    this.token = localStorage.getItem('token');
+-    const storedRole = localStorage.getItem('role');
+-
+-    this.role =
+-      storedRole === 'admin'
+-        ? 'admin'
+-        : storedRole === 'guest'
+-        ? 'guest'
+-        : null;
++    this.token = this.authService.getToken();
++    this.role = this.authService.getRole();
+   }
+ 
+   setGuestToken(): void {
+-    localStorage.setItem('token', 'guest-token-' + Math.random().toString(36).slice(2, 7));
+-    localStorage.setItem('role', 'guest');
+-    this.syncState();
++    this.switchRole('guest');
+   }
+ 
+   setAdminToken(): void {
+-    localStorage.setItem('token', 'admin-token-' + Math.random().toString(36).slice(2, 7));
+-    localStorage.setItem('role', 'admin');
+-    this.syncState();
++    this.switchRole('admin');
++  }
++
++  private switchRole(role: AppRole): void {
++    this.authService.loginAsRole(role).subscribe({
++      next: () => {
++        this.syncState();
++        this.snackBar.open(`Token ${role.toUpperCase()} asignado`, 'Cerrar', {
++          duration: 2000,
++        });
++      },
++      error: (error: Error) => {
++        this.snackBar.open(error.message, 'Cerrar', { duration: 3000 });
++      },
++    });
+   }
+ 
+   get roleLabel(): string {
+@@ -68,5 +75,4 @@ export class GuardsSectionComponent implements OnInit {
+   get hasToken(): boolean {
+     return !!this.token;
+   }
+-
+ }
+diff --git a/src/app/guards-section/guards-section.module.ts b/src/app/guards-section/guards-section.module.ts
+index c60dd3d..0686541 100644
+--- a/src/app/guards-section/guards-section.module.ts
++++ b/src/app/guards-section/guards-section.module.ts
+@@ -1,16 +1,11 @@
+ import { NgModule } from '@angular/core';
+ import { CommonModule } from '@angular/common';
++import { MatSnackBarModule } from '@angular/material/snack-bar';
+ import { GuardsRoutingModule } from './guards-section-routing.module';
+-
+ import { GuardsSectionComponent } from './components/guards-section/guards-section.component';
+ 
+ @NgModule({
+-  declarations: [
+-    GuardsSectionComponent,
+-  ],
+-  imports: [
+-    CommonModule,
+-    GuardsRoutingModule
+-  ]
++  declarations: [GuardsSectionComponent],
++  imports: [CommonModule, GuardsRoutingModule, MatSnackBarModule],
+ })
+-export class GuardsModule {}
+\ No newline at end of file
++export class GuardsModule {}
+diff --git a/src/app/guards-section/role-guard.guard.ts b/src/app/guards-section/role-guard.guard.ts
+index c32af54..cee0d75 100644
+--- a/src/app/guards-section/role-guard.guard.ts
++++ b/src/app/guards-section/role-guard.guard.ts
+@@ -1,39 +1,39 @@
+ import { Injectable } from '@angular/core';
+-import { ActivatedRouteSnapshot, CanActivate, CanLoad, Route, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+-import { Observable } from 'rxjs';
++import { ActivatedRouteSnapshot, CanActivate, Router, UrlTree } from '@angular/router';
+ import { AuthService } from '../core/auth.service';
+ 
+ @Injectable({ providedIn: 'root' })
+ export class RoleGuard implements CanActivate {
+-
+   constructor(
+     private authService: AuthService,
+-    private router: Router
++    private router: Router,
+   ) {}
+ 
+-  canActivate(
+-    route: ActivatedRouteSnapshot
+-  ): boolean | UrlTree {
+-
+-    // 1️⃣ Autenticación
++  canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
+     if (!this.authService.isAuthenticated()) {
+-      return this.router.createUrlTree(['/auth/login']);
++      return this.router.createUrlTree(['/auth']);
+     }
+ 
+-    // 2️⃣ Autorización
+-    const allowedRoles = route.data['roles'] as string[];
++    const allowedRoles = route.data['roles'] as Array<'admin' | 'guest'>;
+ 
+     if (!allowedRoles || allowedRoles.length === 0) {
+-      return false; // configuración incorrecta
++      return false;
+     }
+ 
+     const userRole = this.authService.getRole();
+ 
+-    if (userRole && allowedRoles.includes(userRole)) {
++    if (!userRole) {
++      return this.router.createUrlTree(['/unauthorized']);
++    }
++
++    if (userRole === 'admin') {
++      return true;
++    }
++
++    if (allowedRoles.includes(userRole)) {
+       return true;
+     }
+ 
+-    // 3️⃣ Acceso denegado
+     return this.router.createUrlTree(['/unauthorized']);
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/app/interceptors-section/component/interceptors-section.component.html b/src/app/interceptors-section/component/interceptors-section.component.html
+index a5e4af1..99a445b 100644
+--- a/src/app/interceptors-section/component/interceptors-section.component.html
++++ b/src/app/interceptors-section/component/interceptors-section.component.html
+@@ -51,11 +51,11 @@
+     </p>
+ 
+     <div class="request-meta">
+-      <span><strong>Endpoint:</strong> /api/demo/users</span>
++      <span><strong>Endpoint:</strong> /api/users</span>
+       <span><strong>Método:</strong> GET</span>
+     </div>
+ 
+-    <button class="btn primary">
++    <button class="btn primary" (click)="sendRequest()">
+       Enviar petición
+     </button>
+   </article>
+@@ -92,8 +92,8 @@
+     </p>
+ 
+     <div class="actions-row">
+-      <button class="btn ghost">Simular 401</button>
+-      <button class="btn ghost">Simular 403</button>
++      <button class="btn ghost" (click)="simulate401()">Simular 401</button>
++      <button class="btn ghost" (click)="simulate403()">Simular 403</button>
+     </div>
+   </article>
+ 
+diff --git a/src/app/interceptors-section/component/interceptors-section.component.ts b/src/app/interceptors-section/component/interceptors-section.component.ts
+index d4a3a99..082ef2a 100644
+--- a/src/app/interceptors-section/component/interceptors-section.component.ts
++++ b/src/app/interceptors-section/component/interceptors-section.component.ts
+@@ -1,61 +1,78 @@
+ import { Component, OnInit } from '@angular/core';
++import { AuthService } from 'src/app/core/auth.service';
++import { AppRole } from 'src/app/core/models/auth/auth.models';
++import { UserResponseDto } from 'src/app/core/models/users/user.models';
+ import { InterceptorTestService } from 'src/app/core/services/interceptors-section/interceptor-test.service';
++import { NotificationService } from 'src/app/core/services/interceptors-section/notification.service';
+ 
+ @Component({
+   selector: 'app-interceptors-section',
+   templateUrl: './interceptors-section.component.html',
+   styleUrls: ['./interceptors-section.component.scss'],
+ })
+-// implements OnInit
+ export class InterceptorsSectionComponent implements OnInit {
+-
+- 
+   token: string | null = null;
+   users: string[] = [];
+ 
+   constructor(
+-    private interceptorTestService: InterceptorTestService
++    private interceptorTestService: InterceptorTestService,
++    private authService: AuthService,
++    private notificationService: NotificationService,
+   ) {
+-    this.token = localStorage.getItem('token');
++    this.token = this.authService.getToken();
+   }
+ 
+   ngOnInit(): void {
+-    console.log('InterceptorsSectionComponent initialized');
++    this.refreshState();
+   }
++
+   sendRequest(): void {
+     this.users = [];
+ 
+     this.interceptorTestService.getUsers().subscribe({
+-      next: (response) => {
+-        this.users = response;
++      next: (response: UserResponseDto[]) => {
++        this.users = response.map(user => user.username);
++        this.notificationService.success('Petición completada');
+       },
+       error: () => {
+-        // El ErrorInterceptor se encarga
+-      }
++        // ErrorInterceptor maneja los mensajes globales
++      },
+     });
+   }
+ 
+   simulate401(): void {
+     this.interceptorTestService.simulate401().subscribe({
+-      error: () => {}
++      error: () => {},
+     });
+   }
+ 
+   simulate403(): void {
+     this.interceptorTestService.simulate403().subscribe({
+-      error: () => {}
++      error: () => {},
+     });
+   }
+ 
+   setGuestToken(): void {
+-  localStorage.setItem('token', 'guest-demo-token');
+-  this.token = 'guest-demo-token';
+-  this.sendRequest();
+-}
++    this.switchRole('guest');
++  }
+ 
+   setAdminToken(): void {
+-    localStorage.setItem('token', 'admin-demo-token');
+-    this.token = 'admin-demo-token';
+-    this.sendRequest();
++    this.switchRole('admin');
++  }
++
++  private switchRole(role: AppRole): void {
++    this.authService.loginAsRole(role).subscribe({
++      next: () => {
++        this.refreshState();
++        this.sendRequest();
++      },
++      error: (error: Error) => {
++        this.notificationService.error(error.message);
++      },
++    });
++  }
++
++  private refreshState(): void {
++    this.token = this.authService.getToken();
+   }
+ }
+diff --git a/src/app/interceptors-section/interceptors-section.module.ts b/src/app/interceptors-section/interceptors-section.module.ts
+index 272b5dc..c7d4101 100644
+--- a/src/app/interceptors-section/interceptors-section.module.ts
++++ b/src/app/interceptors-section/interceptors-section.module.ts
+@@ -1,25 +1,11 @@
+ import { NgModule } from '@angular/core';
+ import { CommonModule } from '@angular/common';
+-import { InterceptorsSectionComponent } from './component/interceptors-section.component';
+ import { RouterModule } from '@angular/router';
++import { InterceptorsSectionComponent } from './component/interceptors-section.component';
+ import { InterceptorsSectionRoutingModule } from './interceptors-section-routing.module';
+-import { HTTP_INTERCEPTORS } from '@angular/common/http';
+-import { LoaderInterceptor } from './interceptors/loader.interceptor';
+-
+ 
+ @NgModule({
+   declarations: [InterceptorsSectionComponent],
+-  imports: [
+-    CommonModule,
+-    InterceptorsSectionRoutingModule,
+-    RouterModule
+-  ],
+-  providers: [
+-    {
+-      provide: HTTP_INTERCEPTORS,
+-      useClass: LoaderInterceptor,
+-      multi: true
+-    }
+-  ]
++  imports: [CommonModule, InterceptorsSectionRoutingModule, RouterModule],
+ })
+-export class InterceptorsSectionModule { }
++export class InterceptorsSectionModule {}
+diff --git a/src/app/interceptors-section/interceptors/auth.interceptor.ts b/src/app/interceptors-section/interceptors/auth.interceptor.ts
+index 5ff6d54..7434b99 100644
+--- a/src/app/interceptors-section/interceptors/auth.interceptor.ts
++++ b/src/app/interceptors-section/interceptors/auth.interceptor.ts
+@@ -1,18 +1,33 @@
+ import { Injectable } from '@angular/core';
+ import {
+-  HttpRequest,
+-  HttpHandler,
+   HttpEvent,
+-  HttpInterceptor
++  HttpHandler,
++  HttpInterceptor,
++  HttpRequest,
+ } from '@angular/common/http';
+ import { Observable } from 'rxjs';
++import { AuthService } from 'src/app/core/auth.service';
+ 
+ @Injectable()
+ export class AuthInterceptor implements HttpInterceptor {
++  constructor(private authService: AuthService) {}
++
++  intercept(
++    request: HttpRequest<unknown>,
++    next: HttpHandler,
++  ): Observable<HttpEvent<unknown>> {
++    const token = this.authService.getToken();
++
++    if (!token) {
++      return next.handle(request);
++    }
+ 
+-  constructor() {}
++    const authReq = request.clone({
++      setHeaders: {
++        Authorization: `Bearer ${token}`,
++      },
++    });
+ 
+-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+-    return next.handle(request);
++    return next.handle(authReq);
+   }
+ }
+diff --git a/src/app/interceptors-section/interceptors/cache.interceptor.ts b/src/app/interceptors-section/interceptors/cache.interceptor.ts
+index 2d0994c..6d2cfff 100644
+--- a/src/app/interceptors-section/interceptors/cache.interceptor.ts
++++ b/src/app/interceptors-section/interceptors/cache.interceptor.ts
+@@ -1,18 +1,38 @@
+ import { Injectable } from '@angular/core';
+ import {
+-  HttpRequest,
+-  HttpHandler,
+   HttpEvent,
+-  HttpInterceptor
++  HttpHandler,
++  HttpInterceptor,
++  HttpRequest,
++  HttpResponse,
+ } from '@angular/common/http';
+-import { Observable } from 'rxjs';
++import { Observable, of } from 'rxjs';
++import { tap } from 'rxjs/operators';
+ 
+ @Injectable()
+ export class CacheInterceptor implements HttpInterceptor {
++  private cache = new Map<string, HttpResponse<unknown>>();
++
++  intercept(
++    request: HttpRequest<unknown>,
++    next: HttpHandler,
++  ): Observable<HttpEvent<unknown>> {
++    if (request.method !== 'GET') {
++      return next.handle(request);
++    }
++
++    const cached = this.cache.get(request.urlWithParams);
+ 
+-  constructor() {}
++    if (cached) {
++      return of(cached.clone());
++    }
+ 
+-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+-    return next.handle(request);
++    return next.handle(request).pipe(
++      tap(event => {
++        if (event instanceof HttpResponse) {
++          this.cache.set(request.urlWithParams, event.clone());
++        }
++      }),
++    );
+   }
+ }
+diff --git a/src/app/interceptors-section/interceptors/error.interceptor.ts b/src/app/interceptors-section/interceptors/error.interceptor.ts
+index 7df3c79..e9a9333 100644
+--- a/src/app/interceptors-section/interceptors/error.interceptor.ts
++++ b/src/app/interceptors-section/interceptors/error.interceptor.ts
+@@ -1,18 +1,35 @@
+ import { Injectable } from '@angular/core';
+ import {
+-  HttpRequest,
+-  HttpHandler,
++  HttpErrorResponse,
+   HttpEvent,
+-  HttpInterceptor
++  HttpHandler,
++  HttpInterceptor,
++  HttpRequest,
+ } from '@angular/common/http';
+-import { Observable } from 'rxjs';
++import { Observable, throwError } from 'rxjs';
++import { catchError } from 'rxjs/operators';
++import { NotificationService } from 'src/app/core/services/interceptors-section/notification.service';
+ 
+ @Injectable()
+ export class ErrorInterceptor implements HttpInterceptor {
++  constructor(private notificationService: NotificationService) {}
+ 
+-  constructor() {}
++  intercept(
++    request: HttpRequest<unknown>,
++    next: HttpHandler,
++  ): Observable<HttpEvent<unknown>> {
++    return next.handle(request).pipe(
++      catchError((error: HttpErrorResponse) => {
++        if (error.status === 401) {
++          this.notificationService.error('Sesión inválida o expirada (401)');
++        } else if (error.status === 403) {
++          this.notificationService.error('No tienes permisos para esta acción (403)');
++        } else if (error.status >= 500) {
++          this.notificationService.error('Error interno del servidor');
++        }
+ 
+-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+-    return next.handle(request);
++        return throwError(() => error);
++      }),
++    );
+   }
+ }
+diff --git a/src/app/observable-section/component/flow-modal/observables-flow-modal.component.ts b/src/app/observable-section/component/flow-modal/observables-flow-modal.component.ts
+index 1464029..d7570a3 100644
+--- a/src/app/observable-section/component/flow-modal/observables-flow-modal.component.ts
++++ b/src/app/observable-section/component/flow-modal/observables-flow-modal.component.ts
+@@ -53,7 +53,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
+     this.subs.add(
+       this.labService.flowLog$.subscribe(event => {
+         this.activateStep(event.operator);
+-        this.pushLog(`${event.operator} → ${event.message}`);
++        this.pushLog(`${event.operator} → ${event.label}`);
+       })
+     );
+   }
+diff --git a/src/app/unauthorized/unauthorized.component.html b/src/app/unauthorized/unauthorized.component.html
+new file mode 100644
+index 0000000..ed50e4c
+--- /dev/null
++++ b/src/app/unauthorized/unauthorized.component.html
+@@ -0,0 +1,4 @@
++<section class="unauthorized-view">
++  <h1>Acceso no autorizado</h1>
++  <p>No tienes permisos para acceder a esta ruta.</p>
++</section>
+diff --git a/src/app/unauthorized/unauthorized.component.scss b/src/app/unauthorized/unauthorized.component.scss
+new file mode 100644
+index 0000000..5d4b810
+--- /dev/null
++++ b/src/app/unauthorized/unauthorized.component.scss
+@@ -0,0 +1,4 @@
++.unauthorized-view {
++  padding: 2rem;
++  text-align: center;
++}
+diff --git a/src/app/unauthorized/unauthorized.component.ts b/src/app/unauthorized/unauthorized.component.ts
+new file mode 100644
+index 0000000..62a3ae7
+--- /dev/null
++++ b/src/app/unauthorized/unauthorized.component.ts
+@@ -0,0 +1,8 @@
++import { Component } from '@angular/core';
++
++@Component({
++  selector: 'app-unauthorized',
++  templateUrl: './unauthorized.component.html',
++  styleUrls: ['./unauthorized.component.scss'],
++})
++export class UnauthorizedComponent {}
+diff --git a/src/environments/environment.prod.ts b/src/environments/environment.prod.ts
+index c966979..6974656 100644
+--- a/src/environments/environment.prod.ts
++++ b/src/environments/environment.prod.ts
+@@ -1,3 +1,14 @@
+ export const environment = {
+   production: true,
++  apiBaseUrl: 'http://localhost:8080/api',
++  demoCredentials: {
++    admin: {
++      username: '',
++      password: '',
++    },
++    guest: {
++      username: '',
++      password: '',
++    },
++  },
+ };
+diff --git a/src/environments/environment.ts b/src/environments/environment.ts
+index 66998ae..240dbcd 100644
+--- a/src/environments/environment.ts
++++ b/src/environments/environment.ts
+@@ -1,16 +1,14 @@
+-// This file can be replaced during build by using the `fileReplacements` array.
+-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
+-// The list of file replacements can be found in `angular.json`.
+-
+ export const environment = {
+   production: false,
++  apiBaseUrl: 'http://localhost:8080/api',
++  demoCredentials: {
++    admin: {
++      username: 'steve@test.com',
++      password: '123456',
++    },
++    guest: {
++      username: 'guest@test.com',
++      password: '123456',
++    },
++  },
+ };
+-
