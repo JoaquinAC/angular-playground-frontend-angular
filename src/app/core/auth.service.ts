@@ -1,56 +1,104 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable, throwError } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
 import { LocalStorageService } from './local-storage.service';
+import {
+  AppRole,
+  LoginRequestDto,
+  LoginResponseDto,
+  RegisterRequestDto,
+  SessionUser,
+  UserProfileDto,
+} from './models/auth/auth.models';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private usersKey = 'usersMock';
-  private readonly ROLE_KEY = 'user_role';
+  private readonly TOKEN_KEY = 'token';
+  private readonly SESSION_USER_KEY = 'session_user';
+  private readonly ROLE_KEY = 'role';
+  private readonly apiUrl = `${environment.apiBaseUrl}/auth`;
 
-  constructor(private localStorage: LocalStorageService) {
-    this.ensureMockUsers();
+  constructor(
+    private http: HttpClient,
+    private localStorage: LocalStorageService,
+  ) {}
+
+  login(dto: LoginRequestDto): Observable<SessionUser> {
+    return this.http.post<LoginResponseDto>(`${this.apiUrl}/login`, dto).pipe(
+      switchMap(({ token }) => {
+        this.setToken(token);
+        return this.getMe().pipe(
+          map(profile => this.mapProfileToSessionUser(profile)),
+          tap(sessionUser => this.persistSessionUser(sessionUser)),
+        );
+      }),
+    );
   }
 
-  private ensureMockUsers(): void {
-    const users = this.localStorage.get(this.usersKey);
-    if (!users) {
-      this.localStorage.set(this.usersKey, []);
+  register(dto: RegisterRequestDto): Observable<unknown> {
+    return this.http.post(`${this.apiUrl}/register`, dto);
+  }
+
+  getMe(): Observable<UserProfileDto> {
+    return this.http.get<UserProfileDto>(`${this.apiUrl}/me`);
+  }
+
+  loginAsRole(role: AppRole): Observable<SessionUser> {
+    const credentials = environment.demoCredentials[role];
+
+    if (!credentials.username || !credentials.password) {
+      return throwError(
+        () =>
+          new Error(`Credenciales demo para ${role.toUpperCase()} no configuradas en environment`),
+      );
     }
+
+    return this.login({
+      username: credentials.username,
+      password: credentials.password,
+    });
   }
 
-  login(username: string, password: string): { success: boolean; message: string } {
-    // Caso especial de error forzado
-    if (username === 'admin' && password === 'admin') {
-      return { success: false, message: 'Error: credenciales inválidas (modo simulado)' };
-    }
-
-    const users = this.localStorage.get(this.usersKey) || [];
-    const found = users.find((u: any) => u.username === username && u.password === password);
-
-    const role = found ? found.role : 'guest';
-    this.setToken(role);
-
-    return { success: true, message: 'Login exitoso' };
+  setToken(token: string): void {
+    this.localStorage.set(this.TOKEN_KEY, token);
   }
 
-  register(user: any): void {
-    const users = this.localStorage.get(this.usersKey) || [];
-    users.push(user);
-    this.localStorage.set(this.usersKey, users);
+  getToken(): string | null {
+    return this.localStorage.get<string>(this.TOKEN_KEY);
   }
 
-  setToken(role: string): void {
-    const token = `${role}-token-${Math.random().toString(36).substring(2, 8)}`;
-    this.localStorage.set('token', token);
-    this.localStorage.set('role', role);
+  clearSession(): void {
+    this.localStorage.remove(this.TOKEN_KEY);
+    this.localStorage.remove(this.SESSION_USER_KEY);
+    this.localStorage.remove(this.ROLE_KEY);
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    return !!this.getToken();
   }
 
-  getRole(): string | null {
-    return localStorage.getItem(this.ROLE_KEY);
+  getRole(): AppRole | null {
+    return this.localStorage.get<AppRole>(this.ROLE_KEY);
+  }
+
+  getSessionUser(): SessionUser | null {
+    return this.localStorage.get<SessionUser>(this.SESSION_USER_KEY);
+  }
+
+  private persistSessionUser(user: SessionUser): void {
+    this.localStorage.set(this.SESSION_USER_KEY, user);
+    this.localStorage.set(this.ROLE_KEY, user.role);
+  }
+
+  private mapProfileToSessionUser(profile: UserProfileDto): SessionUser {
+    const role = this.normalizeRole(profile.authorities?.[0]?.authority);
+    return { username: profile.username, role };
+  }
+
+  private normalizeRole(role: string | undefined): AppRole {
+    if (role === 'ROLE_ADMIN' || role === 'ADMIN') return 'admin';
+    return 'guest';
   }
 }

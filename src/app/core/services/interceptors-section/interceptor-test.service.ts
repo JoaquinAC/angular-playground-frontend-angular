@@ -1,23 +1,24 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
+import { UserResponseDto } from '../../models/users/users.models';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class InterceptorTestService {
+  private readonly apiUrl = environment.apiBaseUrl;
 
-  constructor() { }
+  constructor(private http: HttpClient) {}
 
-  getUsers(): Observable<string[]> {
-    return of(['user_1', 'user_2']).pipe(delay(1000));
+  getUsers(): Observable<UserResponseDto[]> {
+    return this.http.get<UserResponseDto[]>(`${this.apiUrl}/users`);
   }
 
-  simulate401(): Observable<never> {
-    return throwError({ status: 401 }).pipe(delay(500));
+  simulate401(): Observable<unknown> {
+    return this.http.get(`${this.apiUrl}/demo/401`);
   }
 
-  simulate403(): Observable<never> {
-    return throwError({ status: 403 }).pipe(delay(500));
+  simulate403(): Observable<unknown> {
+    return this.http.get(`${this.apiUrl}/demo/403`);
   }
 }

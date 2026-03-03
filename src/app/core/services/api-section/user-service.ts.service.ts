@@ -3,57 +3,35 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CreateUserRequestDto } from 'src/app/api-section/models/create-user-request.dto';
 import { UserResponseDto } from 'src/app/api-section/models/user-response.dto';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly API_URL = '/api/users';
+  private readonly usersUrl = `${environment.apiBaseUrl}/users`;
+  private readonly registerUrl = `${environment.apiBaseUrl}/auth/register`;
 
   constructor(private http: HttpClient) {}
 
-  /* ===========================
-     GET USERS
-  ============================ */
-
- getUsers(): Observable<HttpResponse<UserResponseDto[]>> {
-    return this.http.get<UserResponseDto[]>(
-      this.API_URL,
-      {
+  getUsers(): Observable<HttpResponse<UserResponseDto[]>> {
+      return this.http.get<UserResponseDto[]>(this.usersUrl, {
         observe: 'response',
-        responseType: 'json'
-      }
-    );
+        responseType: 'json',
+      });
   }
 
-  /* ===========================
-     CREATE USER (ADMIN)
-  ============================ */
-
-   createUser(
-    dto: CreateUserRequestDto
-  ): Observable<HttpResponse<UserResponseDto>> {
-    return this.http.post<UserResponseDto>(
-      this.API_URL,
-      dto,
-      {
+  createUser(dto: CreateUserRequestDto): Observable<HttpResponse<UserResponseDto>> {
+      return this.http.post<UserResponseDto>(this.registerUrl, dto, {
         observe: 'response',
-        responseType: 'json'
-      }
-    );
+        responseType: 'json',
+      });
   }
 
-  /* ===========================
-     DELETE ALL USERS (ADMIN)
-  ============================ */
-
-  deleteAll(): Observable<HttpResponse<void>> {
-    return this.http.delete<void>(
-      this.API_URL,
-      {
-        observe: 'response',
-        responseType: 'json'
-      }
-    );
+  deleteUser(id: number): Observable<HttpResponse<void>> {
+    return this.http.delete<void>(`${this.usersUrl}/${id}`, {
+      observe: 'response',
+      responseType: 'json',
+    });
   }
 }

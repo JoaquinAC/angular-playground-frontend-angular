@@ -51,13 +51,11 @@
     </p>
 
     <div class="request-meta">
-      <span><strong>Endpoint:</strong> /api/demo/users</span>
+      <span><strong>Endpoint:</strong> /api/users</span>
       <span><strong>Método:</strong> GET</span>
     </div>
 
-    <button class="btn primary">
-      Enviar petición
-    </button>
+    <button class="btn primary" (click)="sendRequest()">Enviar petición</button>
   </article>
 
   <!-- Estado petición -->
@@ -91,9 +89,9 @@
       Pruebas de manejo global de errores HTTP.
     </p>
 
-    <div class="actions-row">
-      <button class="btn ghost">Simular 401</button>
-      <button class="btn ghost">Simular 403</button>
+    <div class="actions-row">  
+      <button class="btn ghost" (click)="simulate401()">Simular 401</button>
+      <button class="btn ghost" (click)="simulate403()">Simular 403</button>
     </div>
   </article>
 

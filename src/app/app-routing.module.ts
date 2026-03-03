@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 
 const routes: Routes = [
   {
@@ -32,6 +33,10 @@ const routes: Routes = [
     path: 'api-section',
     loadChildren: () =>
       import('./api-section/api-section.module').then(m => m.ApiSectionModule),
+  },
+  {
+    path: 'unauthorized',
+    component: UnauthorizedComponent,
   },
   { path: '**', redirectTo: '' },
 ];

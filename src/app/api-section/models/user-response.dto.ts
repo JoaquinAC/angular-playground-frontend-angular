@@ -1,4 +1,7 @@
 export interface UserResponseDto {
   id: number;
-  name: string;
+  username: string;
+  email: string;
+  role: 'ADMIN' | 'GUEST';
+  createdAt: string; // ISO date-time
 }
