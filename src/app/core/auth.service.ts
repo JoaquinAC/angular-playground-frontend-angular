@@ -4,6 +4,9 @@ import { Observable, throwError } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { LocalStorageService } from './local-storage.service';
+import { normalizeRole } from './models/auth/role.utils';
+type DemoCredentials = Record<AppRole, { username: string; password: string }>;
+
 import {
   AppRole,
   LoginRequestDto,
@@ -19,7 +22,7 @@ export class AuthService {
   private readonly SESSION_USER_KEY = 'session_user';
   private readonly ROLE_KEY = 'role';
   private readonly apiUrl = `${environment.apiBaseUrl}/auth`;
-
+  
   constructor(
     private http: HttpClient,
     private localStorage: LocalStorageService,
@@ -46,7 +49,7 @@ export class AuthService {
   }
 
   loginAsRole(role: AppRole): Observable<SessionUser> {
-    const credentials = environment.demoCredentials[role];
+    const credentials = (environment.demoCredentials as DemoCredentials)[role];
 
     if (!credentials.username || !credentials.password) {
       return throwError(
@@ -93,12 +96,7 @@ export class AuthService {
   }
 
   private mapProfileToSessionUser(profile: UserProfileDto): SessionUser {
-    const role = this.normalizeRole(profile.authorities?.[0]?.authority);
-    return { username: profile.username, role };
-  }
-
-  private normalizeRole(role: string | undefined): AppRole {
-    if (role === 'ROLE_ADMIN' || role === 'ADMIN') return 'admin';
-    return 'guest';
+    const role = normalizeRole(profile.authorities?.[0]?.authority);
+      return { username: profile.username, role };
   }
 }

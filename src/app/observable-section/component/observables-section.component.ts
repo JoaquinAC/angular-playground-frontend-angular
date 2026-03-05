@@ -5,7 +5,7 @@ import { modalFadeSlide } from 'src/app/shared/animations/modal-fade-animation';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { User } from '../model/User.model';
-import { ObervablesLabService } from 'src/app/core/services/observable-section/obervables-lab.service';
+import { ObervablesLabService } from 'src/app/core/services/observable-section/observables-lab.service';
 
 @Component({
   selector: 'app-observables-section',
@@ -25,7 +25,7 @@ export class ObservablesSectionComponent implements OnInit {
     private dialog: MatDialog
   ) {
     this.user$ = this.labService.user$;
-    this.usersHistory$ = this.labService.usersHistory$ as any;
+    this.usersHistory$ = this.labService.usersHistory$;
   }
 
   ngOnInit(): void {
@@ -35,7 +35,7 @@ export class ObservablesSectionComponent implements OnInit {
   updateUser(): void {
     this.labService.updateUser({
       id: this.counter,
-      nombre: `Joaquín_${this.counter}`
+      nombre: `Joaquín_${this.counter}`,
     });
     this.counter++;
   }
@@ -47,7 +47,7 @@ export class ObservablesSectionComponent implements OnInit {
   addUser(): void {
     this.labService.addUserToHistory({
       id: this.counter,
-      nombre: `user_${this.counter}`
+      nombre: `user_${this.counter}`,
     });
     this.counter++;
   }
@@ -60,11 +60,11 @@ export class ObservablesSectionComponent implements OnInit {
     }
 
     this.dialog.open(ObservablesFlowModalComponent, {
-    autoFocus: false,
-    restoreFocus: false,
-    disableClose: false,
-    backdropClass: 'custom-dialog-backdrop',
-    panelClass: 'custom-dialog-panel'
+      autoFocus: false,
+      restoreFocus: false,
+      disableClose: false,
+      backdropClass: 'custom-dialog-backdrop',
+      panelClass: 'custom-dialog-panel'
   });
     }
 }

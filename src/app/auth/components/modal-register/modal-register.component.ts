@@ -20,7 +20,7 @@ export class ModalRegisterComponent {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ModalRegisterComponent>,
     private authService: AuthService,
-    private snackbar:MatSnackBar
+    private snackbar: MatSnackBar
   ) {
     this.registerForm = this.fb.group({
       username: ['', Validators.required],

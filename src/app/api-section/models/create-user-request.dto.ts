@@ -1,5 +1,1 @@
-export interface CreateUserRequestDto {
-  username: string;
-  email: string;
-  password: string;
-}
+export { RegisterUserRequestDto as CreateUserRequestDto } from 'src/app/core/models/users/users.models';

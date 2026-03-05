@@ -49,6 +49,10 @@ export class InterceptorsSectionComponent implements OnInit {
   simulate403(): void {
     this.interceptorTestService.simulate403().subscribe({ error: () => {} });
   }
+  
+  simulate500(): void {
+    this.interceptorTestService.simulate500().subscribe({ error: () => {} });
+  }
 
   setGuestToken(): void {
     this.switchRole('guest');
@@ -73,4 +77,6 @@ export class InterceptorsSectionComponent implements OnInit {
   private refreshState(): void {
     this.token = this.authService.getToken();
   }
+
+  
 }

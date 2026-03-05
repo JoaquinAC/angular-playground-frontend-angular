@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ObervablesLabService } from 'src/app/core/services/observable-section/obervables-lab.service';
+import { ObervablesLabService } from 'src/app/core/services/observable-section/observables-lab.service';
 import { User } from '../../model/User.model';
 import { LogEvent } from '../../model/LogEvent.model';
 import { Subscription } from 'rxjs';
@@ -9,7 +9,7 @@ import { TimelineStep } from '../../model/TimelineStep.model';
 @Component({
   selector: 'app-observables-flow-modal',
   templateUrl: './observables-flow-modal.component.html',
-  styleUrls: ['./observables-flow-modal.component.scss']
+  styleUrls: ['./observables-flow-modal.component.scss'],
 })
 export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
 
@@ -21,14 +21,14 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
     { operator: 'map', label: 'map', active: false },
     { operator: 'filter', label: 'filter', active: false },
     { operator: 'debounce', label: 'debounce', active: false },
-    { operator: 'subscriber', label: 'subscribe', active: false }
+    { operator: 'subscriber', label: 'subscribe', active: false},
   ];
 
   private subs = new Subscription();
 
   constructor(
     private labService: ObervablesLabService,
-    private dialogRef: MatDialogRef<ObservablesFlowModalComponent>
+    private dialogRef: MatDialogRef<ObservablesFlowModalComponent>,
   ) {}
 
   ngOnInit(): void {
@@ -39,7 +39,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         this.activeUser = user;
         this.activateStep('source');
         this.pushLog(`BehaviorSubject emit → ${user.nombre}`);
-      })
+      }),
     );
 
     // Historial (ReplaySubject)
@@ -53,22 +53,22 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
     this.subs.add(
       this.labService.flowLog$.subscribe(event => {
         this.activateStep(event.operator);
-        this.pushLog(`${event.operator} → ${event.message}`);
-      })
+        this.pushLog(`${event.operator} → ${event.label}`);
+      }),
     );
   }
 
   private activateStep(operator: string): void {
     this.timeline = this.timeline.map(step => ({
       ...step,
-      active: step.operator === operator
+      active: step.operator === operator,
     }));
   }
 
   private pushLog(message: string): void {
     this.logs.unshift({
       time: new Date().toLocaleTimeString(),
-      message
+      message,
     });
 
     if (this.logs.length > 10) {

@@ -4,8 +4,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from 'src/app/core/auth.service';
 import { LocalStorageService } from 'src/app/core/local-storage.service';
-import { ModalRegisterComponent } from '../modal-register/modal-register.component';
 import { AppRole } from 'src/app/core/models/auth/auth.models';
+import { ModalRegisterComponent } from '../modal-register/modal-register.component';
 
 @Component({
   selector: 'app-login',
@@ -41,26 +41,26 @@ export class LoginComponent implements OnInit {
   }
 
   private loadTokenData(): void {
-  this.currentToken = this.localStorage.get<string>('token');
-  this.currentRole = this.localStorage.get<string>('role');
+    this.currentToken = this.localStorage.get<string>('token');
+    this.currentRole = this.localStorage.get<string>('role');
 
-  this.statusMessage = this.currentRole
-    ? `Token ${this.currentRole.toUpperCase()} asignado en LocalStorage`
-    : 'Sin token asignado';
-}
+    this.statusMessage = this.currentRole
+      ? `Token ${this.currentRole.toUpperCase()} asignado en LocalStorage`
+      : 'Sin token asignado';
+  }
 
   onSubmit(): void {
-  if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) return;
 
-  this.authService.login(this.loginForm.value).subscribe({
-    next: () => {
-      this.loadTokenData();
-      this.snackBar.open('Login exitoso', 'Cerrar', { duration: 2000 });
-    },
-    error: () => {
-      this.snackBar.open('No se pudo iniciar sesión', 'Cerrar', { duration: 2500 });
-    },
-  });
+    this.authService.login(this.loginForm.value).subscribe({
+      next: () => {
+        this.loadTokenData();
+        this.snackBar.open('Login exitoso', 'Cerrar', { duration: 2000 });
+      },
+      error: () => {
+        this.snackBar.open('No se pudo iniciar sesión', 'Cerrar', { duration: 2500 });
+      },
+    });
   }
 
   openRegisterModal(): void {
@@ -70,11 +70,11 @@ export class LoginComponent implements OnInit {
       width: '400px',
       panelClass: 'custom-dialog-panel',
       backdropClass: 'custom-dialog-backdrop',
-      disableClose: true, // Bloquea cierre accidental
-      autoFocus: false, // Evita conflictos de focus
+      disableClose: true,
+      autoFocus: false,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('Usuario creado con éxito', 'Cerrar', { duration: 2500 });
       }

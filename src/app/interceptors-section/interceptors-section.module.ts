@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { InterceptorsSectionComponent } from './component/interceptors-section.component';
 import { RouterModule } from '@angular/router';
 import { InterceptorsSectionRoutingModule } from './interceptors-section-routing.module';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { LoaderInterceptor } from './interceptors/loader.interceptor';
 
 
 @NgModule({
@@ -14,12 +12,6 @@ import { LoaderInterceptor } from './interceptors/loader.interceptor';
     InterceptorsSectionRoutingModule,
     RouterModule
   ],
-  providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: LoaderInterceptor,
-      multi: true
-    }
-  ]
+  providers: []
 })
 export class InterceptorsSectionModule { }

@@ -14,7 +14,12 @@ export class CacheInterceptor implements HttpInterceptor {
   private cache = new Map<string, HttpResponse<unknown>>();
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    if (request.method !== 'GET') return next.handle(request);
+    if (request.method !== 'GET') {
+      if (request.method === 'POST' || request.method === 'DELETE') {
+        this.invalidateUsersCache();
+      }
+      return next.handle(request);
+    }
 
     const cached = this.cache.get(request.urlWithParams);
     if (cached) return of(cached.clone());
@@ -27,4 +32,17 @@ export class CacheInterceptor implements HttpInterceptor {
       }),
     );
   }
+
+  private invalidateCacheByUrl(requestUrl: string): void {
+    Array.from(this.cache.keys())
+      .filter(key => key.includes('/users') || key.includes(requestUrl))
+      .forEach(key => this.cache.delete(key));
+  }
+
+  private invalidateUsersCache(): void {
+    [...this.cache.keys()]
+      .filter(key => key.includes('/users'))
+      .forEach(key => this.cache.delete(key));
+  }
+
 }

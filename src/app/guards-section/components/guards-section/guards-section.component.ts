@@ -1,6 +1,8 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from 'src/app/core/auth.service';
+import { AppRole } from 'src/app/core/models/auth/auth.models';
 
 @Component({
   selector: 'app-guards-section',
@@ -20,7 +22,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class GuardsSectionComponent implements OnInit {
 
-  constructor(private router: Router , private route: ActivatedRoute) { }
+  constructor(
+  private router: Router,
+  private route: ActivatedRoute,
+  private authService: AuthService,
+) {}
   
   token: string | null = null
   role: 'guest' | 'admin' | null = 'guest';
@@ -38,8 +44,8 @@ export class GuardsSectionComponent implements OnInit {
   }
 
   private syncState(): void {
-    this.token = localStorage.getItem('token');
-    const storedRole = localStorage.getItem('role');
+    this.token = this.authService.getToken();
+    const storedRole = this.authService.getRole();
 
     this.role =
       storedRole === 'admin'
@@ -50,15 +56,11 @@ export class GuardsSectionComponent implements OnInit {
   }
 
   setGuestToken(): void {
-    localStorage.setItem('token', 'guest-token-' + Math.random().toString(36).slice(2, 7));
-    localStorage.setItem('role', 'guest');
-    this.syncState();
+    this.switchRole('guest');
   }
 
   setAdminToken(): void {
-    localStorage.setItem('token', 'admin-token-' + Math.random().toString(36).slice(2, 7));
-    localStorage.setItem('role', 'admin');
-    this.syncState();
+    this.switchRole('admin');
   }
 
   get roleLabel(): string {
@@ -67,6 +69,13 @@ export class GuardsSectionComponent implements OnInit {
 
   get hasToken(): boolean {
     return !!this.token;
+  }
+
+  private switchRole(role: AppRole): void {
+    this.authService.loginAsRole(role).subscribe({
+      next: () => this.syncState(),
+      error: () => this.syncState(),
+    });
   }
 
 }

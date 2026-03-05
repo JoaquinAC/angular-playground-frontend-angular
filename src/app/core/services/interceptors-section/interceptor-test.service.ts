@@ -21,4 +21,8 @@ export class InterceptorTestService {
   simulate403(): Observable<unknown> {
     return this.http.get(`${this.apiUrl}/demo/403`);
   }
+
+  simulate500(): Observable<unknown> {
+    return this.http.get(`${this.apiUrl}/demo/500`);
+  }
 }
