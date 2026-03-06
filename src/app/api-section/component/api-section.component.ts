@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { UserResponseDto } from '../../core/models/users/users.models';
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { UserService } from 'src/app/core/services/api-section/user-service';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { AuthService } from 'src/app/core/auth.service';
 import { forkJoin } from 'rxjs';
+import { HttpErrorAdapterService, NormalizedHttpError } from 'src/app/core/services/interceptors-section/http-error-adapter.service';
 
 @Component({
   selector: 'app-api-section',
@@ -29,6 +30,7 @@ export class ApiSectionComponent implements OnInit {
   constructor(
     private userService: UserService,
     private authService: AuthService,
+    private errorAdapter: HttpErrorAdapterService,
   ) {}
 
   ngOnInit(): void {
@@ -47,10 +49,8 @@ export class ApiSectionComponent implements OnInit {
         this.lastStatus = res.status;
         this.lastAction = 'Usuarios obtenidos correctamente';
       },
-      error: (err: { status: number | null; error: unknown }) => {
-        this.lastStatus = err.status;
-        this.lastResponse = err.error;
-        this.lastAction = 'Error al obtener usuarios';
+      error: (err: HttpErrorResponse) => {
+        this.applyErrorState('Error al obtener usuarios', err);
       },
     });
   }
@@ -69,13 +69,12 @@ export class ApiSectionComponent implements OnInit {
       next: (res: HttpResponse<UserResponseDto>) => {
         this.lastStatus = res.status;
         this.lastResponse = res.body;
-        this.lastAction = 'Usuario creado con éxito';
+        this.lastAction =
+          res.status === 201 ? 'Usuario creado con éxito (201)' : 'Usuario creado con éxito';
         this.getUsers();
       },
-      error: (err: { status: number | null; error: unknown }) => {
-        this.lastStatus = err.status;
-        this.lastResponse = err.error;
-        this.lastAction = 'Error al crear usuario';
+      error: (err: HttpErrorResponse) => {
+        this.applyErrorState('Error al crear usuario', err);
       },
     });
   }
@@ -84,7 +83,7 @@ export class ApiSectionComponent implements OnInit {
     if (this.role !== 'admin') return;
 
     if (!this.users.length) {
-      this.lastAction = 'No hay usuarios para eliminar';
+      this.lastAction = 'Todos los usuarios eliminados (204)';
       return;
     }
 
@@ -95,11 +94,25 @@ export class ApiSectionComponent implements OnInit {
         this.lastResponse = null;
         this.lastAction = 'Todos los usuarios eliminados';
       },
-    error: (err: { status: number | null; error: unknown }) => {
-      this.lastStatus = err.status;
-      this.lastResponse = err.error;
-      this.lastAction = 'Error al eliminar usuarios';
-      },
+    error: (err: HttpErrorResponse) => {
+      this.applyErrorState('Error al eliminar usuarios', err);
+    },
     });
   }
+
+    private applyErrorState(contextMessage: string, err: HttpErrorResponse): void {
+      const normalized = this.errorAdapter.adapt(err);
+      this.lastStatus = normalized.status;
+      this.lastResponse = this.mapErrorForUi(normalized);
+      this.lastAction = `${contextMessage}: ${normalized.code}`;
+    }
+
+    private mapErrorForUi(error: NormalizedHttpError): unknown {
+      return {
+        status: error.status,
+        code: error.code,
+        message: error.message,
+        errors: error.fieldErrors,
+      };
+    }
 }

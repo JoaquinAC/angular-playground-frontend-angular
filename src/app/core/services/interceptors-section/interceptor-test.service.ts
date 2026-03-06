@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { UserResponseDto } from '../../models/users/users.models';
 
@@ -14,15 +14,13 @@ export class InterceptorTestService {
     return this.http.get<UserResponseDto[]>(`${this.apiUrl}/users`);
   }
 
-  simulate401(): Observable<unknown> {
-    return this.http.get(`${this.apiUrl}/demo/401`);
+  private callDemoEndpoint(path: '/demo/401' | '/demo/403' | '/demo/500'): Observable<unknown> {
+  if (!environment.enableDemoEndpoints) {
+    return throwError(
+      () => new Error('Los endpoints demo están deshabilitados para este entorno.'),
+    );
   }
 
-  simulate403(): Observable<unknown> {
-    return this.http.get(`${this.apiUrl}/demo/403`);
-  }
-
-  simulate500(): Observable<unknown> {
-    return this.http.get(`${this.apiUrl}/demo/500`);
-  }
+  return this.http.get(`${this.apiUrl}${path}`);
+}
 }

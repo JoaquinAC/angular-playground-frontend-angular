@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { LocalStorageService } from './local-storage.service';
 import { normalizeRole } from './models/auth/role.utils';
@@ -97,6 +97,24 @@ export class AuthService {
 
   private mapProfileToSessionUser(profile: UserProfileDto): SessionUser {
     const role = normalizeRole(profile.authorities?.[0]?.authority);
-      return { username: profile.username, role };
+    return { username: profile.username, role };
+  }
+
+  hydrateSession(): Observable<SessionUser | null> {
+    const token = this.getToken();
+
+    if (!token) {
+      this.clearSession();
+      return of(null);
+    }
+
+    return this.getMe().pipe(
+      map(profile => this.mapProfileToSessionUser(profile)),
+      tap(sessionUser => this.persistSessionUser(sessionUser)),
+      catchError(() => {
+        this.clearSession();
+        return of(null);
+      }),
+    );
   }
 }

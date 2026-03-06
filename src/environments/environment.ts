@@ -11,4 +11,5 @@ export const environment = {
       password: '',
     },
   },
+  enableDemoEndpoints: true,
 };
