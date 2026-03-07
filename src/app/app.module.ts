@@ -8,10 +8,11 @@ import { LoaderComponent } from './shared/components/loader/loader.component';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { UnauthorizedComponent } from './features/unauthorized/pages/unauthorized/unauthorized.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { AuthInterceptor } from './features/interceptors-lab/interceptors/auth.interceptor';
-import { CacheInterceptor } from './features/interceptors-lab/interceptors/cache.interceptor';
-import { LoaderInterceptor } from './features/interceptors-lab/interceptors/loader.interceptor';
-import { ErrorInterceptor } from './features/interceptors-lab/interceptors/error.interceptor';
+import { AuthInterceptor } from '../app/features/interceptors-lab/interceptors/auth.interceptor';
+import { CacheInterceptor } from '../app/features/interceptors-lab/interceptors/cache.interceptor';
+import { LoaderInterceptor } from '../app/features/interceptors-lab/interceptors/loader.interceptor';
+import { ErrorInterceptor } from '../app/features/interceptors-lab/interceptors/error.interceptor';
+
 
 @NgModule({
   declarations: [AppComponent, LoaderComponent, UnauthorizedComponent],

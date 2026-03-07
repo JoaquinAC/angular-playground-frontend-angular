@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { LocalStorageService } from './local-storage.service';
-import { normalizeRole } from './models/auth/role.utils';
+import { LocalStorageService } from '../storage/local-storage.service';
+import { normalizeRole } from '../models/auth/role.utils';
 type DemoCredentials = Record<AppRole, { username: string; password: string }>;
 
 import {
@@ -14,7 +14,7 @@ import {
   RegisterRequestDto,
   SessionUser,
   UserProfileDto,
-} from './models/auth/auth.models';
+} from '../models/auth/auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

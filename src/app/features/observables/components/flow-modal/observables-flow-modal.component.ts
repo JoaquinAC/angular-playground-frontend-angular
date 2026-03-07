@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ObervablesLabService } from 'src/app/features/observables/data/services/observables-lab.service';
-import { User } from '../../../features/observables/data/models/User.model';
-import { LogEvent } from '../../../features/observables/data/models/LogEvent.model';
 import { Subscription } from 'rxjs';
-import { TimelineStep } from '../../../features/observables/data/models/TimelineStep.model';
+import { User } from '../../data/models/User.model';
+import { LogEvent } from '../../data/models/LogEvent.model';
+import { TimelineStep } from '../../data/models/TimelineStep.model';
 
 @Component({
   selector: 'app-observables-flow-modal',

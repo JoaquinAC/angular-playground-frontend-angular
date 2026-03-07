@@ -4,8 +4,8 @@ import { fadeAnimation } from 'src/app/shared/animations/fade.animation';
 import { modalFadeSlide } from 'src/app/shared/animations/modal-fade-animation';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
-import { User } from '../../features/observables/data/models/User.model';
 import { ObervablesLabService } from 'src/app/features/observables/data/services/observables-lab.service';
+import { User } from '../data/models/User.model';
 
 @Component({
   selector: 'app-observables-section',

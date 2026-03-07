@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { GuardsSectionComponent } from '../features/guards/components/guards-section/guards-section.component';
-import { RoleGuard } from './role-guard.guard';
+import { GuardsSectionComponent } from './pages/guards-section/guards-section.component';
+import { RoleGuard } from './guards/role-guard.guard';
 const routes: Routes = [
   {
     path: '',
@@ -12,7 +12,7 @@ const routes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: ['guest'] },
     loadChildren: () =>
-      import('../features/guards/components/guest-dashboard/guest-dashboard.module')
+      import('./pages/guest-dashboard/guest-dashboard.module')
         .then(m => m.GuestDashboardModule)
   },
   {
@@ -20,7 +20,7 @@ const routes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: ['admin'] },
     loadChildren: () =>
-      import('../features/guards/components/admin-dashboard/admin-dashboard.module')
+      import('./pages/admin-dashboard/admin-dashboard.module')
         .then(m => m.AdminDashboardModule)
   }
 ];

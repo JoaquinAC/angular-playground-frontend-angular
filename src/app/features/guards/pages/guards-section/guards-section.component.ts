@@ -1,7 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from 'src/app/core/auth.service';
+import { AuthService } from 'src/app/core/auth/auth.service';
 import { AppRole } from 'src/app/core/models/auth/auth.models';
 
 @Component({

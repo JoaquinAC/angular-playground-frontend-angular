@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthWrapperComponent } from './auth-wrapper/auth-wrapper.component';
+
 import { LoginComponent } from './components/login/login.component';
 import { ModalRegisterComponent } from './components/modal-register/modal-register.component';
+import { AuthWrapperComponent } from './pages/auth-wrapper/auth-wrapper.component';
 
 const routes: Routes = [
   {

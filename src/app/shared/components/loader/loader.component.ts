@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { LoaderService } from 'src/app/core/services/interceptors-section/loader.service';
+import { LoaderService } from 'src/app/features/interceptors-lab/data/services/loader.service';
+
 
 
 @Component({

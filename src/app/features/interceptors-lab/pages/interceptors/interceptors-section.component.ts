@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from 'src/app/core/auth.service';
+import { AuthService } from 'src/app/core/auth/auth.service';
 import { AppRole } from 'src/app/core/models/auth/auth.models';
 import { UserResponseDto } from 'src/app/core/models/users/users.models';
-import { InterceptorTestService } from 'src/app/core/services/interceptors-section/interceptor-test.service';
-import { NotificationService } from 'src/app/core/services/interceptors-section/notification.service';
+import { NotificationService } from '../../data/services/notification.service';
+import { InterceptorTestService } from '../../data/services/interceptor-test.service';
+
+
 
 @Component({
   selector: 'app-interceptors-section',

@@ -7,8 +7,8 @@ export const environment = {
       password: '123456',
     },
     guest: {
-      username: '',
-      password: '',
+      username: 'demo@test.com',
+      password: '123456',
     },
   },
   enableDemoEndpoints: true,
