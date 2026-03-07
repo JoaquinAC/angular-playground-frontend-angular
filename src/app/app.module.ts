@@ -6,12 +6,12 @@ import { RouterModule } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LoaderComponent } from './shared/components/loader/loader.component';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+import { UnauthorizedComponent } from './features/unauthorized/pages/unauthorized/unauthorized.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { AuthInterceptor } from './interceptors-section/interceptors/auth.interceptor';
-import { CacheInterceptor } from './interceptors-section/interceptors/cache.interceptor';
-import { LoaderInterceptor } from './interceptors-section/interceptors/loader.interceptor';
-import { ErrorInterceptor } from './interceptors-section/interceptors/error.interceptor';
+import { AuthInterceptor } from './features/interceptors-lab/interceptors/auth.interceptor';
+import { CacheInterceptor } from './features/interceptors-lab/interceptors/cache.interceptor';
+import { LoaderInterceptor } from './features/interceptors-lab/interceptors/loader.interceptor';
+import { ErrorInterceptor } from './features/interceptors-lab/interceptors/error.interceptor';
 
 @NgModule({
   declarations: [AppComponent, LoaderComponent, UnauthorizedComponent],
