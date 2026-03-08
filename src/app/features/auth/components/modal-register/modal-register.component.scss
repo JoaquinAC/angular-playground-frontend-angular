@@ -76,10 +76,6 @@
   }
 }
 
-app-custom-select {
-  margin-bottom: 3.5rem;
-}
-
 /* Actions */
 .actions {
   display: flex;
@@ -130,4 +126,22 @@ app-custom-select {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+
+::ng-deep .mat-snack-bar-container.auth-toast {
+  border-radius: 12px !important;
+  min-width: 260px !important;
+  font-weight: 600;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+::ng-deep .mat-snack-bar-container.auth-toast--success {
+  background: rgba(31, 92, 51, 0.95);
+  color: #e8ffef;
+}
+
+::ng-deep .mat-snack-bar-container.auth-toast--error {
+  background: rgba(124, 32, 32, 0.95);
+  color: #ffecec;
 }

@@ -3,11 +3,13 @@
     <h2 class="auth-title">Iniciar Sesión</h2>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <mat-form-field appearance="outline" floatLabel="auto" class="full-width">
+      <mat-form-field appearance="outline" floatLabel="always" class="full-width auth-field">
+        <mat-label>Usuario</mat-label>
         <input matInput formControlName="username" placeholder="Ingrese su usuario" />
       </mat-form-field>
 
-      <mat-form-field appearance="outline" floatLabel="auto" class="full-width">
+      <mat-form-field appearance="outline" floatLabel="always" class="full-width auth-field">
+        <mat-label>Contraseña</mat-label>
         <input
           matInput
           type="password"
@@ -26,10 +28,13 @@
     <section class="token-section">
       <h3>Token Playground</h3>
       <mat-form-field appearance="fill" class="full-width">
-        <input matInput [value]="currentToken" readonly />
+        <input matInput [value]="maskedToken" readonly />
       </mat-form-field>
 
-      <p><strong>Rol Actual:</strong> {{ currentRole || 'Sin rol asignado' }}</p>
+      <p>
+        <strong>Rol Actual:</strong>
+        <span [class]="roleBadgeClass">{{ (currentRole || 'Sin rol') | uppercase }}</span>
+      </p>
       <p><strong>Estado:</strong> {{ statusMessage }}</p>
 
       <div class="button-group">

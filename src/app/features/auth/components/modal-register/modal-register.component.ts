@@ -11,10 +11,6 @@ import { AuthService } from 'src/app/core/auth/auth.service';
 })
 export class ModalRegisterComponent {
   registerForm!: FormGroup;
-  roles = [
-    { label: 'Admin', value: 'ADMIN' },
-    { label: 'User', value: 'GUEST' },
-  ];
 
   constructor(
     private fb: FormBuilder,
@@ -26,7 +22,6 @@ export class ModalRegisterComponent {
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
-      role: ['GUEST', Validators.required],
     });
   }
   
@@ -36,9 +31,23 @@ export class ModalRegisterComponent {
     const { username, email, password } = this.registerForm.value;
 
     this.authService.register({ username, email, password }).subscribe({
-      next: () => this.dialogRef.close(true),
+      next: () => {
+        this.snackbar.open('✅ Usuario registrado con éxito', undefined, {
+          duration: 1200,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['auth-toast', 'auth-toast--success'],
+        });
+
+        setTimeout(() => this.dialogRef.close(true), 800);
+      },
       error: () => {
-        this.snackbar.open('No se pudo registrar el usuario', 'Cerrar', { duration: 2500 });
+        this.snackbar.open('❌ No se pudo registrar el usuario', 'Cerrar', {
+          duration: 2500,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['auth-toast', 'auth-toast--error'],
+        });
       },
     });
   }

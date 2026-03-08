@@ -68,41 +68,33 @@
 /* ============================================================
    4. INPUTS / MAT-FORM-FIELD
    ============================================================ */
-mat-form-field {
-  width: 100%;
-  margin-bottom: 1.2rem;
-  position: relative;
+  .auth-field {
+    width: 100%;
+    margin-bottom: 1.2rem;
+    position: relative;
 
   /* label */
   ::ng-deep .mat-form-field-label {
-    position: relative !important;
-    top: 0 !important;
-    left: 0 !important;
-    transform: none !important;
-    display: block !important;
-    margin-bottom: 6px !important;
-    font-size: 0.85rem !important;
-    color: rgba(210,210,210,0.95) !important;
+    color: rgba(210, 210, 210, 0.95) !important;
     font-weight: 600 !important;
-    pointer-events: none;
-    z-index: 2;
   }
 
-  /* field background */
-  ::ng-deep .mat-form-field-flex {
-    padding: 0.6rem 0.9rem !important;
-    min-height: 44px !important;
-    position: relative;
-    background: rgba(255, 255, 255, 0.045);
-    border-radius: 10px;
-    transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
-    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
-  }
+    /* field background */
+    ::ng-deep .mat-form-field-flex {
+      padding: 0.6rem 0.9rem !important;
+      min-height: 44px !important;
+      position: relative;
+      background: rgba(255, 255, 255, 0.045);
+      border-radius: 10px;
+      transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
+    }
 
   /* infix */
-  ::ng-deep .mat-form-field-infix {
-    padding-top: 0 !important;
-  }
+    ::ng-deep .mat-form-field-infix {
+      padding-top: 0 !important;
+      border-top: 0;
+    }
 
   /* input text */
   ::ng-deep .mat-input-element {
@@ -115,10 +107,14 @@ mat-form-field {
     color: #949494;
   }
 
-  /* outline */
-  ::ng-deep .mat-form-field-outline {
-    color: rgba(255,255,255,0.08);
+  ::ng-deep .mat-form-field-outline,
+  ::ng-deep .mat-form-field-outline-start,
+  ::ng-deep .mat-form-field-outline-gap,
+  ::ng-deep .mat-form-field-outline-end {
+    color: rgba(175, 175, 175, 0.6) !important;
+    border-width: 1px !important;
   }
+  
 
   /* focus */
   ::ng-deep .mat-form-field.mat-focused .mat-form-field-outline-thick {
@@ -225,7 +221,7 @@ mat-form-field {
 
     /* TOKEN READONLY — versión FINAL que prevalece */
     ::ng-deep input[readonly].mat-input-element {
-      text-align: center !important;
+      text-align: left !important;
       width: 100% !important;
       color: #e07a2f !important;
       font-family: monospace;
@@ -235,6 +231,55 @@ mat-form-field {
       padding: 0 !important;
     }
   }
+  
+  .role-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.35rem;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    letter-spacing: 0.4px;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+
+    &--admin {
+      color: #ffd2af;
+      background: rgba(255, 123, 34, 0.2);
+      border-color: rgba(255, 123, 34, 0.45);
+    }
+
+    &--guest {
+      color: #cbe7ff;
+      background: rgba(74, 144, 226, 0.16);
+      border-color: rgba(74, 144, 226, 0.4);
+    }
+
+    &--neutral {
+      color: #d0d0d0;
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+  }
+}
+
+::ng-deep .mat-snack-bar-container.auth-toast {
+  border-radius: 12px !important;
+  min-width: 260px !important;
+  font-weight: 600;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+::ng-deep .mat-snack-bar-container.auth-toast--success {
+  background: rgba(31, 92, 51, 0.95);
+  color: #e8ffef;
+}
+
+::ng-deep .mat-snack-bar-container.auth-toast--error {
+  background: rgba(124, 32, 32, 0.95);
+  color: #ffecec;
+
 }
 
 /* ============================================================
