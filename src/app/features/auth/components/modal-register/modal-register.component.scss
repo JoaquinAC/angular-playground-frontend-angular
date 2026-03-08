@@ -12,6 +12,7 @@
   height: 100vh;
 
   .mat-dialog-container {
+    position: relative;
     background: rgba(28, 28, 28, 0.92);
     border-radius: 16px;
     padding: 2rem 2.5rem;
@@ -20,6 +21,7 @@
     max-width: 420px;
     box-shadow: 0 8px 35px rgba(0, 0, 0, 0.75);
     animation: zoomIn 0.3s ease;
+    overflow: visible;
   }
 }
 
@@ -50,8 +52,7 @@
     color: #bdbdbd;
   }
 
-  input,
-  select {
+  input {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     padding: 0.6rem 0.75rem;
@@ -65,14 +66,6 @@
       border-color: #ff7b22;
       box-shadow: 0 0 0 1px rgba(255, 123, 34, 0.4);
     }
-  }
-
-  select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg fill='%23bdbdbd' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.6rem center;
-    background-size: 1.2rem;
   }
 }
 
@@ -95,11 +88,12 @@
   &.ghost {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #bdbdbd;
+    color: #d7d7d7;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.22);
     }
   }
 
@@ -113,6 +107,38 @@
       background: #ff8c3a;
       box-shadow: 0 0 18px rgba(255, 123, 34, 0.45);
     }
+  }
+}
+
+.modal-toast {
+  position: absolute;
+  top: -18px;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.65rem;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  color: #d8ffe7;
+  background: rgba(24, 90, 53, 0.92);
+  border: 1px solid rgba(97, 207, 146, 0.35);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 220ms ease;
+
+  &--show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  &--error {
+    color: #ffeaea;
+    background: rgba(124, 38, 38, 0.92);
+    border-color: rgba(255, 154, 154, 0.4);
   }
 }
 

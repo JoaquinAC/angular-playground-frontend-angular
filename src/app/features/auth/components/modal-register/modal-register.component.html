@@ -1,3 +1,12 @@
+<div
+  class="modal-toast"
+  [class.modal-toast--show]="toastVisible"
+  [class.modal-toast--error]="toastType === 'error'"
+>
+  <span>{{ toastType === 'success' ? '✅' : '⚠️' }}</span>
+  <span>{{ toastMessage }}</span>
+</div>
+
 <h2 class="modal-title">Registrar nuevo usuario</h2>
 
 <form [formGroup]="registerForm" class="register-form">

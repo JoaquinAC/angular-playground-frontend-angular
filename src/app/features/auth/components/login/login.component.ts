@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -13,21 +13,23 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit,OnDestroy {
   loginForm!: FormGroup;
   currentToken: string | null = '';
   currentRole: string | null = '';
   statusMessage = '';
-  showNotif = false;
-  notifMessage = '';
+
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  toastVisible = false;
 
   private readonly redirectDelayMs = 1000;
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private localStorage: LocalStorageService,
-    private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private router: Router,
   ) {}
@@ -35,6 +37,12 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadTokenData();
+  }
+
+  ngOnDestroy(): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
   }
 
   private initForm(): void {
@@ -59,11 +67,11 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.loadTokenData();
-        this.showSuccessNotification('✅ Login exitoso');
+        this.showToast('success', 'Login exitoso');
         setTimeout(() => this.router.navigate(['/']), this.redirectDelayMs);
       },
       error: () => {
-        this.showErrorNotification('❌ No se pudo iniciar sesión');
+        this.showToast('error', 'No se pudo iniciar sesión');
       },
     });
   }
@@ -81,7 +89,7 @@ export class LoginComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.showSuccessNotification('✅ Usuario creado con éxito');
+        this.showToast('success', 'Usuario creado con éxito');
       }
     });
   }
@@ -98,44 +106,40 @@ export class LoginComponent implements OnInit {
     this.authService.loginAsRole(role).subscribe({
       next: () => {
         this.loadTokenData();
-        this.showSuccessNotification(`✅ Token ${role.toUpperCase()} asignado`);
+        this.showToast('success', `Token ${role.toUpperCase()} asignado`);
       },
       error: (error: Error) => {
-        this.showErrorNotification(`❌ ${error.message}`);
+        this.showToast('error', error.message);
       },
     });
   }
   
     get maskedToken(): string {
-      if (!this.currentToken) return '';
+    if (!this.currentToken) return '';
 
-      const visibleChars = Math.max(Math.floor(this.currentToken.length * 0.25), 10);
-      return `${this.currentToken.slice(0, visibleChars)}...`;
+    const visibleChars = Math.max(Math.floor(this.currentToken.length * 0.25), 12);
+    return `...${this.currentToken.slice(-visibleChars)}`;
+  }
+
+  get roleBadgeClass(): string {
+    if (!this.currentRole) return 'role-chip role-chip--neutral';
+
+    return this.currentRole.toLowerCase() === 'admin'
+      ? 'role-chip role-chip--admin'
+      : 'role-chip role-chip--guest';
+  }
+
+  private showToast(type: 'success' | 'error', message: string): void {
+    this.toastType = type;
+    this.toastMessage = message;
+    this.toastVisible = true;
+
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
     }
 
-    get roleBadgeClass(): string {
-      if (!this.currentRole) return 'role-chip role-chip--neutral';
-
-      return this.currentRole.toLowerCase() === 'admin'
-        ? 'role-chip role-chip--admin'
-        : 'role-chip role-chip--guest';
-    }
-
-    private showSuccessNotification(message: string): void {
-      this.snackBar.open(message, undefined, {
-        duration: this.redirectDelayMs,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
-        panelClass: ['auth-toast', 'auth-toast--success'],
-      });
-    }
-
-    private showErrorNotification(message: string): void {
-      this.snackBar.open(message, 'Cerrar', {
-        duration: 2500,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
-        panelClass: ['auth-toast', 'auth-toast--error'],
-      });
+    this.toastTimer = setTimeout(() => {
+      this.toastVisible = false;
+    }, type === 'success' ? this.redirectDelayMs : 2200);
   }
 }

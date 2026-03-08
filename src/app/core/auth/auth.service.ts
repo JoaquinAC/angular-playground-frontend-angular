@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
@@ -40,10 +40,9 @@ export class AuthService {
     );
   }
 
-  register(dto: RegisterRequestDto): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/register`, dto);
+  register(dto: RegisterRequestDto): Observable<HttpResponse<unknown>> {
+    return this.http.post(`${this.apiUrl}/register`, dto, { observe: 'response' });
   }
-
   getMe(): Observable<UserProfileDto> {
     return this.http.get<UserProfileDto>(`${this.apiUrl}/me`);
   }
