@@ -6,10 +6,20 @@ export class NotificationService {
   constructor(private snackBar: MatSnackBar) {}
 
   error(message: string): void {
-    this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3200,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+      panelClass: ['app-toast', 'app-toast--error'],
+    })
   }
 
   success(message: string): void {
-    this.snackBar.open(message, 'Cerrar', { duration: 2200 });
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 2200,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+      panelClass: ['app-toast', 'app-toast--success'],
+    });
   }
 }

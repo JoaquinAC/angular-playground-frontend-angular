@@ -71,3 +71,21 @@ html, body {
     transform: scale(1);
   }
 }
+
+.mat-snack-bar-container.app-toast {
+  border-radius: 12px;
+  min-width: 260px;
+  font-weight: 600;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.mat-snack-bar-container.app-toast--success {
+  background: rgba(31, 92, 51, 0.95);
+  color: #e8ffef;
+}
+
+.mat-snack-bar-container.app-toast--error {
+  background: rgba(124, 32, 32, 0.95);
+  color: #ffecec;
+}
+

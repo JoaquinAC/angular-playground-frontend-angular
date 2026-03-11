@@ -16,33 +16,48 @@ export class CacheInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     if (request.method !== 'GET') {
       if (request.method === 'POST' || request.method === 'DELETE') {
+        this.invalidateAuthCache();
         this.invalidateUsersCache();
       }
       return next.handle(request);
     }
 
-    const cached = this.cache.get(request.urlWithParams);
+    if (this.isAuthRequest(request)) {
+      return next.handle(request);
+    }
+
+      const cacheKey = this.buildCacheKey(request);
+      const cached = this.cache.get(cacheKey);
+
     if (cached) return of(cached.clone());
 
     return next.handle(request).pipe(
-      tap(event => {
+      tap((event) => {
         if (event instanceof HttpResponse) {
-          this.cache.set(request.urlWithParams, event.clone());
+          this.cache.set(cacheKey, event.clone());
         }
       }),
     );
   }
 
-  private invalidateCacheByUrl(requestUrl: string): void {
-    Array.from(this.cache.keys())
-      .filter(key => key.includes('/users') || key.includes(requestUrl))
-      .forEach(key => this.cache.delete(key));
+  private buildCacheKey(request: HttpRequest<unknown>): string {
+    const authHeader = request.headers.get('Authorization') || 'anonymous';
+    return `${request.urlWithParams}::${authHeader}`;
+  }
+
+  private isAuthRequest(request: HttpRequest<unknown>): boolean {
+    return request.url.includes('/auth/');
+  }
+
+  private invalidateAuthCache(): void {
+    [...this.cache.keys()]
+      .filter((key) => key.includes('/auth/'))
+      .forEach((key) => this.cache.delete(key));
   }
 
   private invalidateUsersCache(): void {
     [...this.cache.keys()]
-      .filter(key => key.includes('/users'))
-      .forEach(key => this.cache.delete(key));
+      .filter((key) => key.includes('/users'))
+      .forEach((key) => this.cache.delete(key));
   }
-
 }

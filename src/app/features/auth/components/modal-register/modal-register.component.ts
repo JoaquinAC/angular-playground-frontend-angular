@@ -1,27 +1,23 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { Component, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from 'src/app/core/auth/auth.service';
+import { NotificationService } from 'src/app/features/interceptors-lab/data/services/notification.service';
 
 @Component({
   selector: 'app-modal-register',
   templateUrl: './modal-register.component.html',
   styleUrls: ['./modal-register.component.scss'],
 })
-export class ModalRegisterComponent implements OnDestroy {
+export class ModalRegisterComponent {
   registerForm!: FormGroup;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
-  toastVisible = false;
-
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ModalRegisterComponent>,
     private authService: AuthService,
+    private notificationService: NotificationService,
   ) {
     this.registerForm = this.fb.group({
       username: ['', Validators.required],
@@ -29,42 +25,38 @@ export class ModalRegisterComponent implements OnDestroy {
       password: ['', Validators.required],
     });
   }
-
-  ngOnDestroy(): void {
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-  }
   
   onSubmit(): void {
-    if (this.registerForm.invalid) return;
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      this.notificationService.error(this.buildInvalidFormMessage());
+      return;
+    }
 
     const { username, email, password } = this.registerForm.value;
 
     this.authService.register({ username, email, password }).subscribe({
-      next: response => {
+      next: (response) => {
         const status = this.extractStatusCode(response);
-        if (status === 201) {
-          this.showToast('success', 'Registro exitoso (201)');
-          setTimeout(() => this.dialogRef.close(true), 900);
-          return;
-        }
+        const successMessage =
+          status === 201 ? 'Registro exitoso (201)' : 'Usuario registrado con éxito';
 
-        this.showToast('success', 'Usuario registrado con éxito');
-        setTimeout(() => this.dialogRef.close(true), 900);
+        this.notificationService.success(successMessage);
+        this.dialogRef.close({ success: true, message: successMessage });
       },
       error: (errorResponse: HttpErrorResponse) => {
         const backendMessage =
           (errorResponse.error?.message as string | undefined) ||
           (errorResponse.error?.error as string | undefined) ||
-          errorResponse.message;
+          errorResponse.message ||
+          'No se pudo registrar el usuario';
 
-        if (errorResponse.status === 409) {
-          this.showToast('error', `${backendMessage} (409)`);
-          return;
-        }
-
-        this.showToast('error', backendMessage || 'No se pudo registrar el usuario');
+       const failureMessage =
+          errorResponse.status === 409
+            ? `${backendMessage} (409)`
+            : `${backendMessage}${errorResponse.status ? ` (${errorResponse.status})` 
+            : ''}`;
+        this.notificationService.error(failureMessage);
       },
     });
   }
@@ -73,18 +65,40 @@ export class ModalRegisterComponent implements OnDestroy {
     this.dialogRef.close(false);
   }
 
-  private showToast(type: 'success' | 'error', message: string): void {
-    this.toastType = type;
-    this.toastMessage = message;
-    this.toastVisible = true;
+  get usernameError(): string {
+    const control = this.registerForm.get('username');
+    if (!control?.touched || !control.errors) return '';
+    return 'Usuario vacío';
+  }
 
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
+  get emailError(): string {
+    const control = this.registerForm.get('email');
+    if (!control?.touched || !control.errors) return '';
+
+    if (control.hasError('required')) return 'Email vacío';
+    if (control.hasError('email')) return 'Formato de email inválido';
+
+    return 'Email inválido';
+  }
+
+  get passwordError(): string {
+    const control = this.registerForm.get('password');
+    if (!control?.touched || !control.errors) return '';
+    return 'Contraseña vacía';
+  }
+
+  private buildInvalidFormMessage(): string {
+    const missingFields: string[] = [];
+
+    if (this.registerForm.get('username')?.invalid) missingFields.push('usuario');
+    if (this.registerForm.get('email')?.invalid) missingFields.push('email');
+    if (this.registerForm.get('password')?.invalid) missingFields.push('contraseña');
+
+    if (!missingFields.length) {
+      return 'Completa los campos correctamente';
     }
 
-    this.toastTimer = setTimeout(() => {
-      this.toastVisible = false;
-    }, type === 'success' ? 1200 : 2500);
+    return `Completa los campos: ${missingFields.join(', ')}`;
   }
 
   private extractStatusCode(response: unknown): number | null {

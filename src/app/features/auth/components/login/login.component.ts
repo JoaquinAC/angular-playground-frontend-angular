@@ -7,6 +7,7 @@ import { ModalRegisterComponent } from '../modal-register/modal-register.compone
 import { LocalStorageService } from 'src/app/core/storage/local-storage.service';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -62,7 +63,11 @@ export class LoginComponent implements OnInit,OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      this.showToast('error', this.buildInvalidFormMessage());
+      return;
+    }
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
@@ -70,29 +75,28 @@ export class LoginComponent implements OnInit,OnDestroy {
         this.showToast('success', 'Login exitoso');
         setTimeout(() => this.router.navigate(['/']), this.redirectDelayMs);
       },
-      error: () => {
-        this.showToast('error', 'No se pudo iniciar sesión');
+      error: (errorResponse: HttpErrorResponse) => {
+        const errorMessage =
+          (errorResponse.error?.message as string | undefined) ||
+          errorResponse.message ||
+          'No se pudo iniciar sesión';
+
+        this.showToast('error', errorMessage);
       },
     });
   }
 
   openRegisterModal(): void {
-    if (this.dialog.openDialogs.length > 0) return;
+      if (this.dialog.openDialogs.length > 0) return;
 
-    const dialogRef = this.dialog.open(ModalRegisterComponent, {
-      width: '400px',
-      panelClass: 'custom-dialog-panel',
-      backdropClass: 'custom-dialog-backdrop',
-      disableClose: true,
-      autoFocus: false,
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.showToast('success', 'Usuario creado con éxito');
-      }
-    });
-  }
+      this.dialog.open(ModalRegisterComponent, {
+        width: '400px',
+        panelClass: 'custom-dialog-panel',
+        backdropClass: 'custom-dialog-backdrop',
+        disableClose: true,
+        autoFocus: false,
+      });
+    }
 
   setGuestToken(): void {
     this.switchRole('guest');
@@ -114,6 +118,19 @@ export class LoginComponent implements OnInit,OnDestroy {
     });
   }
   
+    get usernameError(): string {
+      const control = this.loginForm.get('username');
+      if (!control?.touched || !control.errors) return '';
+        return 'Usuario vacío';
+    }
+
+    get passwordError(): string {
+      const control = this.loginForm.get('password');
+      if (!control?.touched || !control.errors) return '';
+        return 'Contraseña vacía';
+    }
+
+
     get maskedToken(): string {
     if (!this.currentToken) return '';
 
@@ -129,6 +146,19 @@ export class LoginComponent implements OnInit,OnDestroy {
       : 'role-chip role-chip--guest';
   }
 
+  private buildInvalidFormMessage(): string {
+    const missingFields: string[] = [];
+
+    if (this.loginForm.get('username')?.invalid) missingFields.push('usuario');
+    if (this.loginForm.get('password')?.invalid) missingFields.push('contraseña');
+
+    if (!missingFields.length) {
+      return 'Completa los campos';
+    }
+
+    return `Completa los campos: ${missingFields.join(', ')}`;
+  }
+
   private showToast(type: 'success' | 'error', message: string): void {
     this.toastType = type;
     this.toastMessage = message;
@@ -138,8 +168,11 @@ export class LoginComponent implements OnInit,OnDestroy {
       clearTimeout(this.toastTimer);
     }
 
-    this.toastTimer = setTimeout(() => {
-      this.toastVisible = false;
-    }, type === 'success' ? this.redirectDelayMs : 2200);
+    this.toastTimer = setTimeout(
+      () => {
+        this.toastVisible = false;
+      },
+      type === 'success' ? this.redirectDelayMs : 2200,
+    );
   }
 }
