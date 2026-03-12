@@ -1,0 +1,9 @@
+<div class="toast-card" [class.toast-card--error]="data.type === 'error'">
+  <div class="toast-card__head">
+    <span class="toast-card__icon">{{ icon }}</span>
+    <strong class="toast-card__title">{{ title }}</strong>
+    <button class="toast-card__close" type="button" (click)="close()">×</button>
+  </div>
+
+  <p class="toast-card__message">{{ data.message }}</p>
+</div>
