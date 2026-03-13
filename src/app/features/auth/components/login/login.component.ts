@@ -8,11 +8,13 @@ import { AuthService } from 'src/app/core/auth/auth.service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NotificationService } from 'src/app/features/interceptors-lab/data/services/notification.service';
+import { fadeSlideInAnimation } from 'src/app/shared/animations/fade-slide-in.animation';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  animations: [fadeSlideInAnimation],
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;

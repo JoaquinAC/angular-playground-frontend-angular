@@ -3,22 +3,13 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { AppRole } from 'src/app/core/models/auth/auth.models';
+import { fadeSlideInAnimation } from 'src/app/shared/animations/fade-slide-in.animation';
 
 @Component({
   selector: 'app-guards-section',
   templateUrl: './guards-section.component.html',
   styleUrls: ['./guards-section.component.scss'],
-  animations: [
-    trigger('fadeSlideIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(8px)' }),
-        animate(
-          '220ms ease-out',
-          style({ opacity: 1, transform: 'translateY(0)' })
-        )
-      ])
-    ])
-  ]
+  animations: [fadeSlideInAnimation]
 })
 export class GuardsSectionComponent implements OnInit {
 

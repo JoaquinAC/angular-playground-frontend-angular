@@ -1,6 +1,6 @@
 
 <div class="auth-container">
-  <mat-card class="auth-card">
+  <mat-card class="auth-card" @fadeSlideIn>
     <h2 class="auth-title">Iniciar Sesión</h2>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
