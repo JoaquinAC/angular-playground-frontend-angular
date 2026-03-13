@@ -1,10 +1,9 @@
 <!-- Guards Test Dashboard -->
 <section class="guards-dashboard" @fadeSlideIn>
-
   <header class="guards-dashboard__header">
     <h1 class="guards-dashboard__title">🛡️ Guards Test Dashboard</h1>
     <p class="guards-dashboard__subtitle">
-      Vista técnica para validación de roles, tokens y comportamiento de Guards
+      Vista técnica para validación de roles, tokens y comportamiento de Guards.
     </p>
   </header>
 
@@ -15,8 +14,8 @@
     <div class="status-grid">
       <div class="status-item">
         <span class="status-label">Token actual</span>
-        <span class="status-value status-value--mono">
-          {{ token || '— Sin token —' }}
+        <span class="status-value status-value--mono" [title]="token || ''">
+          {{ tokenPreview }}
         </span>
       </div>
 
@@ -29,18 +28,14 @@
             'badge--admin-success': role === 'admin'
           }"
         >
-          {{  role ? roleLabel : 'ADMIN' }}
+          {{ roleLabel }}
         </span>
       </div>
 
       <div class="status-item">
         <span class="status-label">Estado</span>
-        <span class="status-value">
-          {{
-            hasToken
-              ? 'Token ' + roleLabel + ' asignado en LocalStorage'
-              : 'No existe token en LocalStorage'
-          }}
+        <span class="status-value status-pill" [ngClass]="{ 'status-pill--ok': hasToken, 'status-pill--warn': !hasToken }">
+          {{ hasToken ? 'Token ' + roleLabel + ' asignado en LocalStorage' : 'No existe token en LocalStorage' }}
         </span>
       </div>
     </div>
@@ -53,46 +48,46 @@
     <div class="actions-row">
       <button class="btn ghost" (click)="setGuestToken()">Set Token Invitado</button>
       <button class="btn primary" (click)="setAdminToken()">Set Token Admin</button>
+      <button class="btn warning" (click)="clearToken()">Limpiar token</button>
     </div>
   </article>
 
   <!-- Rutas -->
   <section class="routes-grid">
-
     <!-- Guest Route -->
-    <article class="card card--route">
+    <article class="card card--route card--route-guest">
       <h3 class="card__title">Ruta Invitado</h3>
 
       <p class="card__description">
-        Acceso libre. No requiere token o permite token invitado.
+        Ruta protegida por <strong>RoleGuard</strong>. Solo permite ingreso con token activo y rol invitado.
       </p>
 
       <ul class="route-rules">
-        <li>✔ Sin token permitido</li>
-        <li>✔ Token invitado permitido</li>
-        <li>✖ Token admin bloqueado</li>
+        <li class="rule rule--ok">✔ Valida autenticación (token activo).</li>
+        <li class="rule rule--ok">✔ Verifica rol permitido: <strong>guest</strong>.</li>
+        <li class="rule rule--block">✖ Si no hay token: redirige a <strong>/auth/login</strong>.</li>
+        <li class="rule rule--block">✖ Si el rol no coincide: redirige a <strong>/unauthorized</strong>.</li>
       </ul>
 
       <button class="btn ghost" (click)="goToGuest()">Ir a Guest Route</button>
     </article>
 
     <!-- Admin Route -->
-    <article class="card card--route">
+    <article class="card card--route card--route-admi">
       <h3 class="card__title">Ruta Admin</h3>
 
       <p class="card__description">
-        Ruta protegida. Solo accesible con token administrador válido.
+        Ruta protegida por <strong>RoleGuard</strong>. Solo permite ingreso con token activo y rol administrador.
       </p>
 
       <ul class="route-rules">
-        <li>✔ Token admin requerido</li>
-        <li>✖ Sin token redirige a /auth</li>
-        <li>✖ Token invitado bloqueado</li>
+        <li class="rule rule--ok">✔ Valida autenticación (token activo).</li>
+        <li class="rule rule--ok">✔ Verifica rol permitido: <strong>admin</strong>.</li>
+        <li class="rule rule--block">✖ Si no hay token: redirige a <strong>/auth/login</strong>.</li>
+        <li class="rule rule--block">✖ Si el rol no coincide: redirige a <strong>/unauthorized</strong>.</li>
       </ul>
-
       <button class="btn primary" (click)="goToAdmin()">Ir a Admin Route</button>
     </article>
-
   </section>
 
 </section>
