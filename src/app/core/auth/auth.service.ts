@@ -5,7 +5,6 @@ import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { LocalStorageService } from '../storage/local-storage.service';
 import { normalizeRole } from '../models/auth/role.utils';
-type DemoCredentials = Record<AppRole, { username: string; password: string }>;
 
 import {
   AppRole,
@@ -15,6 +14,8 @@ import {
   SessionUser,
   UserProfileDto,
 } from '../models/auth/auth.models';
+
+type DemoCredentials = Record<AppRole, { username: string; password: string }>;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -33,8 +34,8 @@ export class AuthService {
       switchMap(({ token }) => {
         this.setToken(token);
         return this.getMe().pipe(
-          map(profile => this.mapProfileToSessionUser(profile)),
-          tap(sessionUser => this.persistSessionUser(sessionUser)),
+          map((profile) => this.mapProfileToSessionUser(profile)),
+          tap((sessionUser) => this.persistSessionUser(sessionUser)),
         );
       }),
     );
@@ -108,8 +109,8 @@ export class AuthService {
     }
 
     return this.getMe().pipe(
-      map(profile => this.mapProfileToSessionUser(profile)),
-      tap(sessionUser => this.persistSessionUser(sessionUser)),
+      map((profile) => this.mapProfileToSessionUser(profile)),
+      tap((sessionUser) => this.persistSessionUser(sessionUser)),
       catchError(() => {
         this.clearSession();
         return of(null);

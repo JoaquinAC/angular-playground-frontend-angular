@@ -79,16 +79,17 @@ export class LoginComponent implements OnInit {
   }
 
   openRegisterModal(): void {
-      if (this.dialog.openDialogs.length > 0) return;
+    if (this.dialog.openDialogs.length > 0) return;
 
-      this.dialog.open(ModalRegisterComponent, {
-        width: '400px',
-        panelClass: 'custom-dialog-panel',
-        backdropClass: 'custom-dialog-backdrop',
-        disableClose: true,
-        autoFocus: false,
-      });
-    }
+    this.dialog.open(ModalRegisterComponent, {
+      width: '400px',
+      panelClass: 'custom-dialog-panel',
+      backdropClass: 'custom-dialog-backdrop',
+      disableClose: true,
+      autoFocus: false,
+    });
+    
+  }
 
   setGuestToken(): void {
     this.switchRole('guest');
@@ -110,22 +111,21 @@ export class LoginComponent implements OnInit {
     });
   }
   
-    get usernameError(): string {
-      const control = this.loginForm.get('username');
-      if (!control?.touched || !control.errors) return '';
-        return 'Usuario vacío';
-    }
+  get usernameError(): string {
+    const control = this.loginForm.get('username');
+    if (!control?.touched || !control.errors) return '';
+    return 'Usuario vacío';
+  }
 
-    get passwordError(): string {
-      const control = this.loginForm.get('password');
-      if (!control?.touched || !control.errors) return '';
-        return 'Contraseña vacía';
-    }
+  get passwordError(): string {
+    const control = this.loginForm.get('password');
+    if (!control?.touched || !control.errors) return '';
+    return 'Contraseña vacía';
+  }
 
 
-    get maskedToken(): string {
+  get maskedToken(): string {
     if (!this.currentToken) return '';
-
     const visibleChars = Math.max(Math.floor(this.currentToken.length * 0.25), 12);
     return `...${this.currentToken.slice(-visibleChars)}`;
   }

@@ -15,7 +15,11 @@ import { CustomSelectComponent } from 'src/app/shared/components/custom-select/c
 import { LoginComponent } from './components/login/login.component';
 
 @NgModule({
-  declarations: [LoginComponent,ModalRegisterComponent, AuthWrapperComponent ,CustomSelectComponent],
+  declarations: [
+    LoginComponent,
+    ModalRegisterComponent, 
+    AuthWrapperComponent,
+    CustomSelectComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,

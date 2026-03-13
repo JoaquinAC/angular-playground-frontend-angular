@@ -54,9 +54,9 @@
 /* ============================================================
    4. INPUTS / MAT-FORM-FIELD
    ============================================================ */
-  .auth-field {
-    width: 100%;
-    margin-bottom: 1rem;
+.auth-field {
+  width: 100%;
+  margin-bottom: 1rem;
 
     ::ng-deep .mat-form-field-wrapper {
       margin: 0;
@@ -163,18 +163,18 @@
 }
 
 .token-field {
-  ::ng-deep .mat-form-field-flex {
-    justify-content: center !important;
-    background: rgba(255, 255, 255, 0.035);
+    ::ng-deep .mat-form-field-flex {
+      justify-content: center !important;
+      background: rgba(255, 255, 255, 0.035);
   }
 
     /* TOKEN READONLY — versión FINAL que prevalece */
     ::ng-deep input[readonly].mat-input-element {
-    text-align: center !important;
-    color: #e9a673 !important;
-    font-family: monospace;
-    font-weight: 600;
-    letter-spacing: 0.4px;
+      text-align: center !important;
+      color: #e9a673 !important;
+      font-family: monospace;
+      font-weight: 600;
+      letter-spacing: 0.4px;
   }
 }
   

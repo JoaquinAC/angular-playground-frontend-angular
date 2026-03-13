@@ -1,4 +1,3 @@
-
 <div class="auth-container">
   <mat-card class="auth-card" @fadeSlideIn>
     <h2 class="auth-title">Iniciar Sesión</h2>
@@ -14,7 +13,9 @@
 
       <div class="button-group">
         <button mat-raised-button color="primary" type="submit">Iniciar Sesión</button>
-        <button mat-button type="button" (click)="openRegisterModal()">Registrar Nuevo Usuario</button>
+        <button mat-button type="button" (click)="openRegisterModal()">
+          Registrar Nuevo Usuario
+        </button>
       </div>
     </form>
 
@@ -26,13 +27,17 @@
 
       <p>
         <strong>Rol Actual:</strong>
-        <span [class]="roleBadgeClass">{{ (currentRole || 'Sin rol') | uppercase }}</span>
+        <span [class]="roleBadgeClass">{{ (currentRole || 'Sin rol').toUpperCase() }}</span>
       </p>
       <p><strong>Estado:</strong> {{ statusMessage }}</p>
 
       <div class="button-group">
-        <button mat-stroked-button color="accent" (click)="setGuestToken()">Set Token Invitado</button>
-        <button mat-stroked-button color="warn" (click)="setAdminToken()">Set Token Admin</button>
+        <button mat-stroked-button color="accent" (click)="setGuestToken()">
+          Set Token Invitado
+        </button>
+        <button mat-stroked-button color="warn" (click)="setAdminToken()">
+          Set Token Admin
+        </button>
       </div>
     </section>
   </mat-card>
