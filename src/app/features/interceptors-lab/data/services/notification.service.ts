@@ -8,7 +8,7 @@ export class NotificationService {
 
   error(message: string): void {
     this.snackBar.openFromComponent(NotificationToastComponent, {
-      data: { type: 'success', message },
+      data: { type: 'error', message },
       duration: 2600,
       horizontalPosition: 'right',
       verticalPosition: 'top',

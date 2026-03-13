@@ -98,8 +98,53 @@ html, body {
   color: #241515;
 }
 
+.cdk-overlay-container,
+.cdk-global-overlay-wrapper {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .cdk-overlay-container {
+  position: fixed;
   z-index: 2300;
+}
+
+.cdk-global-overlay-wrapper {
+  position: absolute;
+  display: flex;
+  z-index: 2300;
+}
+
+.cdk-overlay-pane {
+  position: absolute;
+  display: flex;
+  max-width: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+.mat-snack-bar-top {
+  align-items: flex-start;
+}
+
+.mat-snack-bar-bottom {
+  align-items: flex-end;
+}
+
+.mat-snack-bar-right {
+  justify-content: flex-end;
+}
+
+.mat-snack-bar-left {
+  justify-content: flex-start;
+}
+
+.mat-snack-bar-center {
+  justify-content: center;
 }
 
  
