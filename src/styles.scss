@@ -147,4 +147,8 @@ html, body {
   justify-content: center;
 }
 
- 
+ body.auth-page {
+  overflow-y: hidden !important;
+  min-height: 100vh;
+  background: #1e1e1f;
+}
