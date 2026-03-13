@@ -12,10 +12,11 @@ import { AuthInterceptor } from '../app/features/interceptors-lab/interceptors/a
 import { CacheInterceptor } from '../app/features/interceptors-lab/interceptors/cache.interceptor';
 import { LoaderInterceptor } from '../app/features/interceptors-lab/interceptors/loader.interceptor';
 import { ErrorInterceptor } from '../app/features/interceptors-lab/interceptors/error.interceptor';
+import { NotificationToastComponent } from './shared/components/notification-toast/notification-toast.component';
 
 
 @NgModule({
-  declarations: [AppComponent, LoaderComponent, UnauthorizedComponent],
+  declarations: [AppComponent, LoaderComponent, UnauthorizedComponent,NotificationToastComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

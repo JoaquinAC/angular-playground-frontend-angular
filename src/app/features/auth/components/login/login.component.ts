@@ -1,31 +1,26 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppRole } from 'src/app/core/models/auth/auth.models';
 import { ModalRegisterComponent } from '../modal-register/modal-register.component';
 import { LocalStorageService } from 'src/app/core/storage/local-storage.service';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { NotificationService } from 'src/app/features/interceptors-lab/data/services/notification.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit,OnDestroy {
+export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   currentToken: string | null = '';
   currentRole: string | null = '';
   statusMessage = '';
 
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
-  toastVisible = false;
-
   private readonly redirectDelayMs = 1000;
-  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -33,17 +28,12 @@ export class LoginComponent implements OnInit,OnDestroy {
     private localStorage: LocalStorageService,
     private dialog: MatDialog,
     private router: Router,
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
     this.initForm();
     this.loadTokenData();
-  }
-
-  ngOnDestroy(): void {
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
   }
 
   private initForm(): void {
@@ -65,14 +55,14 @@ export class LoginComponent implements OnInit,OnDestroy {
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.showToast('error', this.buildInvalidFormMessage());
+      this.notificationService.error(this.buildInvalidFormMessage());
       return;
     }
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.loadTokenData();
-        this.showToast('success', 'Login exitoso');
+        this.notificationService.success('Login exitoso');
         setTimeout(() => this.router.navigate(['/']), this.redirectDelayMs);
       },
       error: (errorResponse: HttpErrorResponse) => {
@@ -81,7 +71,7 @@ export class LoginComponent implements OnInit,OnDestroy {
           errorResponse.message ||
           'No se pudo iniciar sesión';
 
-        this.showToast('error', errorMessage);
+        this.notificationService.error(errorMessage);
       },
     });
   }
@@ -110,10 +100,10 @@ export class LoginComponent implements OnInit,OnDestroy {
     this.authService.loginAsRole(role).subscribe({
       next: () => {
         this.loadTokenData();
-        this.showToast('success', `Token ${role.toUpperCase()} asignado`);
+        this.notificationService.success(`Token ${role.toUpperCase()} asignado`);
       },
       error: (error: Error) => {
-        this.showToast('error', error.message);
+        this.notificationService.error(error.message);
       },
     });
   }
@@ -157,22 +147,5 @@ export class LoginComponent implements OnInit,OnDestroy {
     }
 
     return `Completa los campos: ${missingFields.join(', ')}`;
-  }
-
-  private showToast(type: 'success' | 'error', message: string): void {
-    this.toastType = type;
-    this.toastMessage = message;
-    this.toastVisible = true;
-
-    if (this.toastTimer) {
-      clearTimeout(this.toastTimer);
-    }
-
-    this.toastTimer = setTimeout(
-      () => {
-        this.toastVisible = false;
-      },
-      type === 'success' ? this.redirectDelayMs : 2200,
-    );
   }
 }

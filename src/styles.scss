@@ -73,19 +73,33 @@ html, body {
 }
 
 .mat-snack-bar-container.app-toast {
-  border-radius: 12px;
-  min-width: 260px;
-  font-weight: 600;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  border-radius: 14px;
+  min-width: 280px;
+  max-width: 350px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(244, 248, 251, 0.2);
+  color: #dce8ef;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  z-index: 2305;
 }
 
 .mat-snack-bar-container.app-toast--success {
-  background: rgba(31, 92, 51, 0.95);
-  color: #e8ffef;
+  background: linear-gradient(140deg, rgba(232, 243, 238, 0.24), rgba(89, 160, 124, 0.2));
+  border-color: rgba(111, 176, 143, 0.32);
+  color: #e6f3eb;
 }
 
 .mat-snack-bar-container.app-toast--error {
-  background: rgba(124, 32, 32, 0.95);
-  color: #ffecec;
+  background: linear-gradient(130deg, rgba(252, 243, 243, 0.58), rgba(222, 112, 112, 0.34));
+  border-color: rgba(255, 148, 148, 0.45);
+  color: #241515;
 }
 
+.cdk-overlay-container {
+  z-index: 2300;
+}
+
+ 
