@@ -52,6 +52,49 @@
     </div>
   </article>
 
+  <!-- Diagrama de flujo (visual) -->
+  <article class="card card--flow" aria-label="Flujo de validación de acceso">
+    <h2 class="card__title">Flujo de validación (UI explicativa)</h2>
+    <p class="card__description">
+      El guard valida autenticación y rol antes de cargar la ruta protegida.
+    </p>
+
+    <div class="flow-track" role="list" aria-label="Pasos del flujo de autorización">
+      <div class="flow-step" role="listitem">
+        <span class="flow-step__index">1</span>
+        <span class="flow-step__label">Click botón</span>
+      </div>
+
+      <span class="flow-arrow" aria-hidden="true">→</span>
+
+      <div class="flow-step" role="listitem">
+        <span class="flow-step__index">2</span>
+        <span class="flow-step__label">Router</span>
+      </div>
+
+      <span class="flow-arrow" aria-hidden="true">→</span>
+
+      <div class="flow-step flow-step--highlight" role="listitem">
+        <span class="flow-step__index">3</span>
+        <span class="flow-step__label">RoleGuard</span>
+      </div>
+
+      <span class="flow-arrow" aria-hidden="true">→</span>
+
+      <div class="flow-step" role="listitem">
+        <span class="flow-step__index">4</span>
+        <span class="flow-step__label">LocalStorage/AuthService</span>
+      </div>
+
+      <span class="flow-arrow" aria-hidden="true">→</span>
+
+      <div class="flow-step flow-step--result" role="listitem">
+        <span class="flow-step__index">5</span>
+        <span class="flow-step__label">Acceso o Redirect</span>
+      </div>
+    </div>
+  </article>
+
   <!-- Rutas -->
   <section class="routes-grid">
     <!-- Guest Route -->

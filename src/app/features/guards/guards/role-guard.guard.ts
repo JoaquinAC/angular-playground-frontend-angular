@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate,Router, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate,CanLoad,Route,Router, UrlSegment, UrlTree } from '@angular/router';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { AppRole } from 'src/app/core/models/auth/auth.models';
 
 
 
 @Injectable({ providedIn: 'root' })
-export class RoleGuard implements CanActivate {
+export class RoleGuard implements CanActivate,CanLoad {
 
   constructor(
     private authService: AuthService,
@@ -14,14 +14,20 @@ export class RoleGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
+    const allowedRoles = route.data['roles'] as AppRole[];
+        return this.validateAccess(allowedRoles);
+  }
 
+  canLoad(route: Route, _segments: UrlSegment[]): boolean | UrlTree {
+    const allowedRoles = (route.data?.roles || []) as AppRole[];
+    return this.validateAccess(allowedRoles);
+  }
+
+  private validateAccess(allowedRoles: AppRole[]): boolean | UrlTree {
     // 1️⃣ Autenticación
     if (!this.authService.isAuthenticated()) {
       return this.router.createUrlTree(['/auth/login']);
     }
-
-    // 2️⃣ Autorización
-    const allowedRoles = route.data['roles'] as AppRole[];
 
     if (!allowedRoles || allowedRoles.length === 0) {
       return false;

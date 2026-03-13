@@ -10,6 +10,7 @@ const routes: Routes = [
   {
     path: 'guest-dashboard',
     canActivate: [RoleGuard],
+    canLoad: [RoleGuard],
     data: { roles: ['guest'] },
     loadChildren: () =>
       import('./pages/guest-dashboard/guest-dashboard.module')
@@ -18,6 +19,7 @@ const routes: Routes = [
   {
     path: 'admin-dashboard',
     canActivate: [RoleGuard],
+    canLoad: [RoleGuard],
     data: { roles: ['admin'] },
     loadChildren: () =>
       import('./pages/admin-dashboard/admin-dashboard.module')
