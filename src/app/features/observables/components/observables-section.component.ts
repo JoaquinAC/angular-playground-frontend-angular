@@ -1,17 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { ObservablesFlowModalComponent } from './flow-modal/observables-flow-modal.component';
-import { fadeAnimation } from 'src/app/shared/animations/fade.animation';
-import { modalFadeSlide } from 'src/app/shared/animations/modal-fade-animation';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { ObervablesLabService } from 'src/app/features/observables/data/services/observables-lab.service';
 import { User } from '../data/models/User.model';
+import { fadeSlideInAnimation } from 'src/app/shared/animations/fade-slide-in.animation';
+import { ObservablesFlowModalComponent } from './flow-modal/observables-flow-modal.component';
 
 @Component({
   selector: 'app-observables-section',
   templateUrl: './observables-section.component.html',
   styleUrls: ['./observables-section.component.scss'],
-  animations: [modalFadeSlide]
+  animations: [fadeSlideInAnimation],
 })
 export class ObservablesSectionComponent implements OnInit {
 
@@ -22,7 +21,7 @@ export class ObservablesSectionComponent implements OnInit {
 
   constructor(
     private labService: ObervablesLabService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {
     this.user$ = this.labService.user$;
     this.usersHistory$ = this.labService.usersHistory$;
@@ -54,9 +53,8 @@ export class ObservablesSectionComponent implements OnInit {
 
   openFlowModal(): void {
    // Evita abrir múltiples instancias
-    const openDialogs = this.dialog.openDialogs;
-    if (openDialogs.length) {
-      openDialogs[0].close();
+    if (this.dialog.openDialogs.length) {
+      this.dialog.openDialogs[0].close();
     }
 
     this.dialog.open(ObservablesFlowModalComponent, {
@@ -64,7 +62,9 @@ export class ObservablesSectionComponent implements OnInit {
       restoreFocus: false,
       disableClose: false,
       backdropClass: 'custom-dialog-backdrop',
-      panelClass: 'custom-dialog-panel'
-  });
-    }
+      panelClass: 'custom-dialog-panel',
+      maxWidth: '900px',
+      width: '92vw',
+    });
+  }
 }

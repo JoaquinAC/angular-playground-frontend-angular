@@ -55,7 +55,7 @@ updateUser(user: User) {
 }
 
   resetUser() {
-    const initial: User = { id: 1, nombre: 'Joaquín_1' };
+    const initial: User = { id: 1, nombre: 'Invitado' };
       this.userSubject.next(initial);  // BehaviorSubject
       this.usersHistorySubject.next({
         ...initial,

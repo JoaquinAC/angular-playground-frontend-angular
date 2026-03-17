@@ -1,47 +1,91 @@
-<h2 class="observables-title">
-  🔎 Flujo Reactivo en Tiempo Real
-</h2>
+<div class="flow-modal">
+  <h2 class="observables-title">🔎 RxJS Playground — Flujo avanzado</h2>
+  <button class="observables-close" (click)="close()" aria-label="Cerrar modal">✕</button>
 
-<button
-  class="observables-close"
-  (click)="close()"
-  aria-label="Cerrar modal"
->
-  ✕
-</button>
+  <p class="modal-intro">
+    Usa cada demo con el patrón <strong>Acción → Pipeline → Resultado visible</strong>.
+  </p>
 
-<!-- ESTADO ACTUAL -->
-<section class="status-box">
-  <div class="status-header">
-    <span class="badge active">● ACTIVO</span>
-    <span class="source">BehaviorSubject</span>
-  </div>
-
-  <pre class="state">
-{{ activeUser | json }}
-  </pre>
-</section>
-
-<!-- PIPELINE RXJS -->
-<section class="timeline">
-  <div class="timeline-track">
-    <div
-      *ngFor="let step of timeline"
-      class="timeline-node"
-      [class.active]="step.active"
+  <nav class="demo-tabs" aria-label="Demos RxJS">
+    <button
+      *ngFor="let tab of tabs"
+      class="demo-tab"
+      [class.active]="activeTab === tab.id"
+      (click)="setTab(tab.id)"
     >
-      <span>{{ step.label }}</span>
+      {{ tab.title }}
+    </button>
+  </nav>
+
+  <section class="status-box">
+    <div class="status-header">
+      <span class="badge active">● ACTIVO</span>
+      <span class="source">{{ activeTabSummary }}</span>
     </div>
-  </div>
-</section>
+    <pre class="state">{{ activeUser | json }}</pre>
+  </section>
 
-<!-- LOG -->
-<section class="log-box">
-  <h3>📜 Log reactivo</h3>
+  <section class="playground-actions" [ngSwitch]="activeTab">
+    <div *ngSwitchCase="'cold-hot'" class="demo-box">
+      <h3>Cold vs Hot</h3>
+      <p>Compara stream frío duplicado vs stream compartido con cache.</p>
+      <button class="btn primary" (click)="runColdVsHot()">Ejecutar demo</button>
+    </div>
 
-  <ul>
-    <li *ngFor="let log of logs">
-      [{{ log.time }}] {{ log.message }}
-    </li>
-  </ul>
-</section>
+    <div *ngSwitchCase="'reactive-input'" class="demo-box">
+      <h3>Input Reactivo</h3>
+      <p>Debounce + distinct + switchMap para evitar requests innecesarios.</p>
+      <div class="search-row">
+        <input [(ngModel)]="searchTerm" placeholder="Ej: angular rxjs" />
+        <button class="btn primary" (click)="triggerSearch()">Buscar</button>
+      </div>
+      <p class="result">{{ searchResult }}</p>
+    </div>
+
+    <div *ngSwitchCase="'map-operators'" class="demo-box">
+      <h3>switchMap vs mergeMap vs concatMap</h3>
+      <p>Visualiza cancelación, concurrencia y secuencia sobre una misma fuente.</p>
+      <button class="btn primary" (click)="runMapComparison()">Comparar operadores</button>
+    </div>
+<div *ngSwitchCase="'combine-streams'" class="demo-box">
+      <h3>combineLatest / forkJoin</h3>
+      <p>Coordinación de streams con actualización parcial y resultado final.</p>
+      <button class="btn primary" (click)="runCombineStreams()">Ejecutar combinación</button>
+    </div>
+
+    <div *ngSwitchCase="'error-resilience'" class="demo-box">
+      <h3>retry + catchError</h3>
+      <p>Reintenta error simulado y aplica fallback si se agotan intentos.</p>
+      <button class="btn primary" (click)="runErrorResilience()">Simular error 500</button>
+    </div>
+  </section>
+
+  <section class="timeline">
+    <h3>Pipeline en vivo</h3>
+    <div class="timeline-track">
+      <div
+        *ngFor="let step of timeline"
+        class="timeline-node"
+        [class.active]="step.active"
+        [class.error]="stepStatus[step.operator] === 'error'"
+      >
+        <span>{{ step.label }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="metrics">
+    <div class="metric">Emisiones: <strong>{{ metrics.emissions }}</strong></div>
+    <div class="metric">Errores: <strong>{{ metrics.errors }}</strong></div>
+    <div class="metric">Cancelaciones: <strong>{{ metrics.cancellations }}</strong></div>
+    <div class="metric">Latencia aprox: <strong>{{ metrics.latencyMs }}ms</strong></div>
+    <button class="btn ghost" (click)="resetDemoView()">Reset demo</button>
+  </section>
+
+  <section class="log-box">
+    <h3>📜 Bitácora de eventos</h3>
+    <ul>
+      <li *ngFor="let log of logs">[{{ log.time }}] {{ log.message }}</li>
+    </ul>
+  </section>
+</div>

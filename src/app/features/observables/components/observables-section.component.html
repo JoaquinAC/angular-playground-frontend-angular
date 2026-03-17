@@ -1,44 +1,37 @@
 <section class="observables-dashboard" @fadeSlideIn>
-
   <header class="observables-dashboard__header">
     <h1 class="observables-dashboard__title">🔬 Observables Lab</h1>
     <p class="observables-dashboard__subtitle">
-      Visualización práctica de estado reactivo y flujos RxJS
+      Laboratorio práctico de estado reactivo y operadores RxJS orientado a entrevistas técnicas.
     </p>
   </header>
 
   <!-- BehaviorSubject -->
   <article class="card card--status">
     <h2 class="card__title">🧠 BehaviorSubject — Estado global</h2>
+    <p class="card__description">Demuestra estado compartido y valor inmediato para nuevos suscriptores.</p>
 
     <div class="status-grid">
       <div class="status-item">
         <span class="status-label">Usuario activo</span>
-        <span class="status-value status-value--mono">
-          {{ user$ | async | json }}
-        </span>
+        <span class="status-value status-value--mono">{{ user$ | async | json }}</span>
       </div>
 
       <div class="status-item">
         <span class="status-label">Fuente</span>
-        <span class="badge badge--admin">
-          BehaviorSubject
-        </span>
+        <span class="badge badge--admin">BehaviorSubject</span>span
       </div>
 
       <div class="status-item">
-        <span class="status-label">Estado</span>
-        <span class="status-value">
-          Último valor disponible para nuevos suscriptores
-        </span>
+        <span class="status-label">Resultado esperado</span>
+        <span class="status-value">Cada actualización se refleja en vivo en toda la vista.</span>
       </div>
 
       <div class="checks-list">
-        <div class="check-item">Usuario activo en tiempo real</div>
-        <div class="check-item">Último valor disponible para nuevos suscriptores</div>
-        <div class="check-item">Actualización global reflejada en todos los componentes</div>
+        <div class="check-item">Estado global sincronizado en tiempo real</div>
+        <div class="check-item">Último valor disponible para suscripción tardía</div>
+        <div class="check-item">Reseteo controlado sin recargar la pantalla</div>
       </div>
-      
     </div>
 
     <div class="actions-row">
@@ -50,17 +43,16 @@
   <!-- ReplaySubject -->
   <article class="card">
     <h2 class="card__title">📚 ReplaySubject — Historial reactivo</h2>
+    <p class="card__description">Demuestra buffer de emisiones y recuperación del historial reciente.</p>
 
     <ul class="history-list">
-      <li *ngFor="let user of usersHistory$ | async">
-        {{ user.nombre }} — {{ user.timestamp }}
-      </li>
+      <li *ngFor="let user of usersHistory$ | async">{{ user.nombre }} — {{ user.timestamp }}</li>
     </ul>
 
     <div class="checks-list">
       <div class="check-item">Mantiene últimos 5 usuarios emitidos</div>
-      <div class="check-item">Suscripción tardía recibe últimos valores</div>
-      <div class="check-item">Agregar usuarios refleja cambios en la lista</div>
+      <div class="check-item">Suscripción tardía recibe valores anteriores</div>
+      <div class="check-item">Agregar usuarios refleja cambios de inmediato</div>
     </div>
 
     <div class="actions-row">
@@ -71,13 +63,17 @@
   <!-- Modal trigger -->
   <article class="card">
     <h2 class="card__title">🔎 Flujo reactivo</h2>
+    <h2 class="card__title">🧪 RxJS Playground (Modal)</h2>
     <p class="card__description">
-      Visualización del stream completo con suscripción tardía y eventos en vivo.
+      Abre el modal para ejecutar demos avanzadas sin saturar esta pantalla: pipelines, bitácora y métricas.
     </p>
 
-    <button class="btn primary" (click)="openFlowModal()">
-      Abrir modal de flujo en tiempo real
-    </button>
-  </article>
+   <div class="checks-list compact">
+      <div class="check-item">Cold vs Hot, switch/merge/concatMap y combinaciones de streams</div>
+      <div class="check-item">Input reactivo con debounce + distinct + switchMap</div>
+      <div class="check-item">Simulación de error con retry + catchError y fallback</div>
+    </div>
 
+    <button class="btn primary" (click)="openFlowModal()">Abrir modal de flujo en tiempo real</button>
+  </article>
 </section>
