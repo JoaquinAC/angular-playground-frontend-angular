@@ -1,4 +1,7 @@
 export interface LogEvent {
-  time: string;                 // HH:mm:ss.SSS
-  message?:any;                  // payload mostrado (opcional)
+  time: string;
+  technicalAction: string;
+  humanExplanation: string;
+  runId: number;
+  level: 'info' | 'warning' | 'error';
 }

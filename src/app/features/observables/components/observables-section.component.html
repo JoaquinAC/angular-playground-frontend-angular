@@ -2,35 +2,36 @@
   <header class="observables-dashboard__header">
     <h1 class="observables-dashboard__title">🔬 Observables Lab</h1>
     <p class="observables-dashboard__subtitle">
-      Laboratorio práctico de estado reactivo y operadores RxJS orientado a entrevistas técnicas.
+      Vista base para dominar conceptos; el modal te lleva al nivel de ejecución avanzada.
     </p>
   </header>
 
   <!-- BehaviorSubject -->
   <article class="card card--status">
     <h2 class="card__title">🧠 BehaviorSubject — Estado global</h2>
-    <p class="card__description">Demuestra estado compartido y valor inmediato para nuevos suscriptores.</p>
+    <p class="card__description">Muestra el último valor actual y cómo cambia en tiempo real.</p>
 
     <div class="status-grid">
+      <div class="status-item" [class.is-pulse]="latestUserPulse">
+        <span class="status-label">Último valor emitido</span>
+        <span class="status-value">{{ latestUserLabel }}</span>
+        <small class="status-meta">{{ lastChangeAt }}</small>
+      </div>
+
       <div class="status-item">
-        <span class="status-label">Usuario activo</span>
+        <span class="status-label">Snapshot de estado</span>
         <span class="status-value status-value--mono">{{ user$ | async | json }}</span>
       </div>
 
       <div class="status-item">
         <span class="status-label">Fuente</span>
-        <span class="badge badge--admin">BehaviorSubject</span>span
-      </div>
-
-      <div class="status-item">
-        <span class="status-label">Resultado esperado</span>
-        <span class="status-value">Cada actualización se refleja en vivo en toda la vista.</span>
+        <span class="badge badge--admin">BehaviorSubject</span>
       </div>
 
       <div class="checks-list">
-        <div class="check-item">Estado global sincronizado en tiempo real</div>
-        <div class="check-item">Último valor disponible para suscripción tardía</div>
-        <div class="check-item">Reseteo controlado sin recargar la pantalla</div>
+        <div class="check-item" [class.active]="replayChecks.liveUpdates">actualización global inmediata</div>
+        <div class="check-item active">último valor disponible para nuevo suscriptor</div>
+        <div class="check-item">reseteo controlado sin recargar</div>
       </div>
     </div>
 
@@ -43,16 +44,21 @@
   <!-- ReplaySubject -->
   <article class="card">
     <h2 class="card__title">📚 ReplaySubject — Historial reactivo</h2>
-    <p class="card__description">Demuestra buffer de emisiones y recuperación del historial reciente.</p>
+    <p class="card__description">Visualiza el buffer vivo: entradas nuevas y salida del más antiguo al llegar al límite.</p>
+
+    <div class="replay-summary" [class.is-pulse]="replayPulse">
+      <span class="badge badge--admin">Buffer {{ replayBufferLabel }}</span>
+      <span class="replay-note">{{ replayLatestAction }}</span>
+    </div>
 
     <ul class="history-list">
       <li *ngFor="let user of usersHistory$ | async">{{ user.nombre }} — {{ user.timestamp }}</li>
     </ul>
 
     <div class="checks-list">
-      <div class="check-item">Mantiene últimos 5 usuarios emitidos</div>
-      <div class="check-item">Suscripción tardía recibe valores anteriores</div>
-      <div class="check-item">Agregar usuarios refleja cambios de inmediato</div>
+      <div class="check-item" [class.active]="replayChecks.keepsLatest">mantiene los últimos valores emitidos</div>
+      <div class="check-item" [class.active]="replayChecks.lateSubscription">suscripción tardía recibe historial reciente</div>
+      <div class="check-item" [class.active]="replayChecks.liveUpdates">cada nuevo evento actualiza la lista en vivo</div>
     </div>
 
     <div class="actions-row">
@@ -61,17 +67,18 @@
   </article>
 
   <!-- Modal trigger -->
-  <article class="card">
-    <h2 class="card__title">🔎 Flujo reactivo</h2>
-    <h2 class="card__title">🧪 RxJS Playground (Modal)</h2>
+  <article class="card card--bridge">
+    <h2 class="card__title">🧪 Siguiente nivel: RxJS Playground (Modal)</h2>
     <p class="card__description">
-      Abre el modal para ejecutar demos avanzadas sin saturar esta pantalla: pipelines, bitácora y métricas.
+      Aquí viste la base. En el modal verás la ejecución avanzada con pipeline animado, métricas y bitácora pedagógica.
     </p>
 
-   <div class="checks-list compact">
-      <div class="check-item">Cold vs Hot, switch/merge/concatMap y combinaciones de streams</div>
-      <div class="check-item">Input reactivo con debounce + distinct + switchMap</div>
-      <div class="check-item">Simulación de error con retry + catchError y fallback</div>
+   <div class="bridge-flow">
+      <span>Vista principal</span>
+      <span>→</span>
+      <span>Conceptos base</span>
+      <span>→</span>
+      <span>Modal avanzado</span>
     </div>
 
     <button class="btn primary" (click)="openFlowModal()">Abrir modal de flujo en tiempo real</button>

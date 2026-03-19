@@ -54,6 +54,23 @@ html, body {
   box-sizing: border-box;
 }
 
+.cdk-overlay-pane.custom-dialog-panel.observables-dialog-panel .mat-dialog-container {
+  width: min(1200px, 95vw) !important;
+  max-width: min(1200px, 95vw) !important;
+  min-width: min(960px, 92vw);
+  max-height: 92vh;
+  padding: 1.5rem 1.6rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 980px) {
+  .cdk-overlay-pane.custom-dialog-panel.observables-dialog-panel .mat-dialog-container {
+    min-width: 92vw;
+    width: 95vw !important;
+    max-width: 95vw !important;
+  }
+}
+
 .observables-backdrop {
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(6px);

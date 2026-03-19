@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit , OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs';
+import { Observable , Subscription } from 'rxjs';
 import { ObervablesLabService } from 'src/app/features/observables/data/services/observables-lab.service';
 import { User } from '../data/models/User.model';
 import { fadeSlideInAnimation } from 'src/app/shared/animations/fade-slide-in.animation';
@@ -12,12 +12,27 @@ import { ObservablesFlowModalComponent } from './flow-modal/observables-flow-mod
   styleUrls: ['./observables-section.component.scss'],
   animations: [fadeSlideInAnimation],
 })
-export class ObservablesSectionComponent implements OnInit {
+export class ObservablesSectionComponent implements OnInit,OnDestroy {
 
   user$: Observable<User>;
   usersHistory$: Observable<User[]>;
 
+  latestUserLabel = 'Sin emisiones recientes';
+  latestUserPulse = false;
+  lastChangeAt = 'Aún no hay cambios';
+
+  replayBufferLabel = '0/5';
+  replayLatestAction = 'Esperando nuevas emisiones en el buffer.';
+  replayPulse = false;
+  replayChecks = {
+    keepsLatest: false,
+    lateSubscription: false,
+    liveUpdates: false,
+  };
+
   private counter = 2;
+  private subs = new Subscription();
+  private previousHistoryLength = 0;
 
   constructor(
     private labService: ObervablesLabService,
@@ -28,7 +43,11 @@ export class ObservablesSectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('ObservablesSectionComponent initialized');
+    this.bindVisualIndicators();
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
   }
 
   updateUser(): void {
@@ -62,9 +81,44 @@ export class ObservablesSectionComponent implements OnInit {
       restoreFocus: false,
       disableClose: false,
       backdropClass: 'custom-dialog-backdrop',
-      panelClass: 'custom-dialog-panel',
-      maxWidth: '900px',
-      width: '92vw',
+      panelClass: ['custom-dialog-panel', 'observables-dialog-panel'],
+      maxWidth: '1200px',
+      width: '95vw',
     });
   }
+
+  private bindVisualIndicators(): void {
+    this.subs.add(
+      this.user$.subscribe((user) => {
+        this.latestUserLabel = `${user.nombre} (id:${user.id})`;
+        this.lastChangeAt = `Actualizado a las ${new Date().toLocaleTimeString()}`;
+        this.latestUserPulse = true;
+        this.replayChecks.liveUpdates = true;
+        timerReset(() => (this.latestUserPulse = false));
+      }),
+    );
+
+    this.subs.add(
+      this.usersHistory$.subscribe((history) => {
+        this.replayBufferLabel = `${history.length}/5`;
+        this.replayChecks.keepsLatest = history.length > 0;
+
+        if (history.length > this.previousHistoryLength) {
+          this.replayLatestAction = `Entró ${history[history.length - 1]?.nombre} al buffer.`;
+          if (history.length === 5 && this.previousHistoryLength === 5) {
+            this.replayLatestAction = `Entró ${history[history.length - 1]?.nombre} y salió el más antiguo por límite de buffer.`;
+            this.replayChecks.lateSubscription = true;
+          }
+        }
+
+        this.previousHistoryLength = history.length;
+        this.replayPulse = true;
+        timerReset(() => (this.replayPulse = false));
+      }),
+    );
+  }
+}
+
+function timerReset(callback: () => void): void {
+  setTimeout(() => callback(), 650);
 }

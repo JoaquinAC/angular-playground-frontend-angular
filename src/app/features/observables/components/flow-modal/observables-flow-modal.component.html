@@ -1,91 +1,132 @@
 <div class="flow-modal">
-  <h2 class="observables-title">🔎 RxJS Playground — Flujo avanzado</h2>
-  <button class="observables-close" (click)="close()" aria-label="Cerrar modal">✕</button>
-
-  <p class="modal-intro">
-    Usa cada demo con el patrón <strong>Acción → Pipeline → Resultado visible</strong>.
-  </p>
+  <div class="modal-head">
+    <div>
+      <h2 class="observables-title">🔎 RxJS Playground — Flujo avanzado</h2>
+      <p class="modal-intro">Patrón mental: <strong>Acción → Flujo → Resultado → Explicación</strong>.</p>
+    </div>
+    <button class="observables-close" (click)="close()" aria-label="Cerrar modal">✕</button>
+  </div>
 
   <nav class="demo-tabs" aria-label="Demos RxJS">
-    <button
-      *ngFor="let tab of tabs"
-      class="demo-tab"
-      [class.active]="activeTab === tab.id"
-      (click)="setTab(tab.id)"
-    >
+    <button *ngFor="let tab of tabs" class="demo-tab" [class.active]="activeTab === tab.id" (click)="setTab(tab.id)">
       {{ tab.title }}
     </button>
   </nav>
 
-  <section class="status-box">
-    <div class="status-header">
-      <span class="badge active">● ACTIVO</span>
-      <span class="source">{{ activeTabSummary }}</span>
-    </div>
-    <pre class="state">{{ activeUser | json }}</pre>
-  </section>
+  <div class="modal-layout">
+    <section class="modal-left">
+      <section class="playground-actions" [ngSwitch]="activeTab">
+        <div *ngSwitchCase="'cold-hot'" class="demo-box">
+          <h3>Cold vs Hot</h3>
+          <p>Compara stream frío duplicado vs stream compartido con cache.</p>
+          <button class="btn primary" (click)="runColdVsHot()">Ejecutar demo</button>
+        </div>
 
-  <section class="playground-actions" [ngSwitch]="activeTab">
-    <div *ngSwitchCase="'cold-hot'" class="demo-box">
-      <h3>Cold vs Hot</h3>
-      <p>Compara stream frío duplicado vs stream compartido con cache.</p>
-      <button class="btn primary" (click)="runColdVsHot()">Ejecutar demo</button>
-    </div>
-
-    <div *ngSwitchCase="'reactive-input'" class="demo-box">
-      <h3>Input Reactivo</h3>
-      <p>Debounce + distinct + switchMap para evitar requests innecesarios.</p>
-      <div class="search-row">
-        <input [(ngModel)]="searchTerm" placeholder="Ej: angular rxjs" />
-        <button class="btn primary" (click)="triggerSearch()">Buscar</button>
-      </div>
-      <p class="result">{{ searchResult }}</p>
-    </div>
+  <div *ngSwitchCase="'reactive-input'" class="demo-box">
+          <h3>Input Reactivo</h3>
+          <p>Debounce + distinct + switchMap para evitar requests innecesarios.</p>
+          <div class="search-row">
+            <input [(ngModel)]="searchTerm" placeholder="Ej: angular rxjs" />
+            <button class="btn primary" (click)="triggerSearch()">Buscar</button>
+          </div>
+          <p class="result">{{ searchResult }}</p>
+        </div>
 
     <div *ngSwitchCase="'map-operators'" class="demo-box">
-      <h3>switchMap vs mergeMap vs concatMap</h3>
-      <p>Visualiza cancelación, concurrencia y secuencia sobre una misma fuente.</p>
-      <button class="btn primary" (click)="runMapComparison()">Comparar operadores</button>
-    </div>
-<div *ngSwitchCase="'combine-streams'" class="demo-box">
-      <h3>combineLatest / forkJoin</h3>
-      <p>Coordinación de streams con actualización parcial y resultado final.</p>
-      <button class="btn primary" (click)="runCombineStreams()">Ejecutar combinación</button>
-    </div>
+          <h3>switchMap vs mergeMap vs concatMap</h3>
+          <p>Visualiza cancelación, concurrencia y secuencia sobre una misma fuente.</p>
+          <button class="btn primary" (click)="runMapComparison()">Comparar operadores</button>
+        </div>
+
+    <div *ngSwitchCase="'combine-streams'" class="demo-box">
+          <h3>combineLatest / forkJoin</h3>
+          <p>Coordinación de streams con actualización parcial y resultado final.</p>
+          <button class="btn primary" (click)="runCombineStreams()">Ejecutar combinación</button>
+        </div>
 
     <div *ngSwitchCase="'error-resilience'" class="demo-box">
-      <h3>retry + catchError</h3>
-      <p>Reintenta error simulado y aplica fallback si se agotan intentos.</p>
-      <button class="btn primary" (click)="runErrorResilience()">Simular error 500</button>
-    </div>
-  </section>
+          <h3>retry + catchError</h3>
+          <p>Reintenta error simulado y aplica fallback si se agotan intentos.</p>
+          <button class="btn primary" (click)="runErrorResilience()">Simular error 500</button>
+        </div>
+      </section>
 
-  <section class="timeline">
-    <h3>Pipeline en vivo</h3>
-    <div class="timeline-track">
-      <div
-        *ngFor="let step of timeline"
-        class="timeline-node"
-        [class.active]="step.active"
-        [class.error]="stepStatus[step.operator] === 'error'"
-      >
-        <span>{{ step.label }}</span>
-      </div>
-    </div>
-  </section>
+ <section class="timeline">
+        <h3>Pipeline en vivo</h3>
+        <div class="timeline-track">
+          <div
+            *ngFor="let step of timeline; let i = index"
+            class="timeline-node"
+            [class.running]="stepStatus[step.operator] === 'running'"
+            [class.done]="stepStatus[step.operator] === 'done'"
+            [class.error]="stepStatus[step.operator] === 'error'"
+          >
+            <span>{{ step.label }}</span>
+            <span class="flow-dot"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="status-box">
+        <div class="status-header">
+          <span class="badge active">● ACTIVO</span>
+          <span class="source">{{ activeTabSummary }}</span>
+        </div>
+        <pre class="state">{{ activeUser | json }}</pre>
+      </section>
+    </section>
+
+    <aside class="modal-right">
+      <section class="explain-box">
+        <h3>Qué está pasando</h3>
+        <p>{{ activeExplanation.whatIsHappening }}</p>
+        <ul>
+          <li><strong>Operador clave:</strong> {{ activeExplanation.operator }}</li>
+          <li><strong>Efecto directo:</strong> {{ activeExplanation.effect }}</li>
+        </ul>
+      </section>
+
+      <section class="runtime-box">
+        <h3>En este momento</h3>
+        <ul>
+          <li><strong>Se ejecuta:</strong> {{ runtimeStatus.running }}</li>
+          <li><strong>Se cancela:</strong> {{ runtimeStatus.cancelled }}</li>
+          <li><strong>Se mantiene:</strong> {{ runtimeStatus.sustained }}</li>
+        </ul>
+      </section>
 
   <section class="metrics">
-    <div class="metric">Emisiones: <strong>{{ metrics.emissions }}</strong></div>
-    <div class="metric">Errores: <strong>{{ metrics.errors }}</strong></div>
-    <div class="metric">Cancelaciones: <strong>{{ metrics.cancellations }}</strong></div>
-    <div class="metric">Latencia aprox: <strong>{{ metrics.latencyMs }}ms</strong></div>
-    <button class="btn ghost" (click)="resetDemoView()">Reset demo</button>
-  </section>
+        <div class="metric-card">
+          <span class="metric-label">Emisiones</span>
+          <strong class="metric-value">{{ metrics.emissions }}</strong>
+        </div>
+        <div class="metric-card metric-card--error">
+          <span class="metric-label">Errores</span>
+          <strong class="metric-value">{{ metrics.errors }}</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Cancelaciones</span>
+          <strong class="metric-value">{{ metrics.cancellations }}</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Latencia</span>
+          <strong class="metric-value">{{ metrics.latencyMs }}ms</strong>
+        </div>
+        <button class="btn ghost" (click)="resetDemoView()">Reset demo</button>
+      </section>
 
   <section class="log-box">
-    <h3>📜 Bitácora de eventos</h3>
-    <ul>
-      <li *ngFor="let log of logs">[{{ log.time }}] {{ log.message }}</li>
-    </ul>
-  </section>
+        <h3>📜 Bitácora pedagógica</h3>
+        <div class="run-group" *ngFor="let group of groupedLogs">
+          <h4>Ejecución #{{ group.runId }}</h4>
+          <ul>
+            <li *ngFor="let log of group.events" [class.error]="log.level === 'error'" [class.warning]="log.level === 'warning'">
+              <div class="log-tech">[{{ log.time }}] {{ log.technicalAction }}</div>
+              <div class="log-human">{{ log.humanExplanation }}</div>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </aside>
+  </div>
 </div>
