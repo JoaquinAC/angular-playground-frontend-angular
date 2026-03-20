@@ -1,86 +1,138 @@
 <section class="observables-dashboard" @fadeSlideIn>
   <header class="observables-dashboard__header">
+    <span class="eyebrow">Observables que se entienden sin pelear con el código</span>
     <h1 class="observables-dashboard__title">🔬 Observables Lab</h1>
     <p class="observables-dashboard__subtitle">
-      Vista base para dominar conceptos; el modal te lleva al nivel de ejecución avanzada.
+      Esta vista te muestra qué estás viendo, qué problema resuelve cada patrón y qué cambia en
+      pantalla cuando el flujo reacciona.
     </p>
   </header>
 
   <!-- BehaviorSubject -->
   <article class="card card--status">
-    <h2 class="card__title">🧠 BehaviorSubject — Estado global</h2>
-    <p class="card__description">Muestra el último valor actual y cómo cambia en tiempo real.</p>
+    <div class="card__intro">
+      <span class="card__kicker">BehaviorSubject</span>
+      <h2 class="card__title">🧠 Valor compartido que siempre tiene una respuesta lista</h2>
+      <p class="card__description">
+        <strong>Qué problema resuelve:</strong> cuando un componente llega tarde, no debería
+        quedarse “a ciegas”.
+      </p>
+      <p class="card__context">
+        <strong>Qué está pasando:</strong> este estado guarda el valor actual y se lo entrega al
+        instante a cualquier nuevo suscriptor.
+      </p>
+    </div>
 
     <div class="status-grid">
-      <div class="status-item" [class.is-pulse]="latestUserPulse">
-        <span class="status-label">Último valor emitido</span>
+      <div class="status-item status-item--highlight" [class.is-pulse]="latestUserPulse">
+        <span class="status-label">Ahora mismo</span>
         <span class="status-value">{{ latestUserLabel }}</span>
         <small class="status-meta">{{ lastChangeAt }}</small>
+        <p class="status-copy">{{ latestUserNarrative }}</p>
       </div>
 
       <div class="status-item">
-        <span class="status-label">Snapshot de estado</span>
-        <span class="status-value status-value--mono">{{ user$ | async | json }}</span>
-      </div>
-
-      <div class="status-item">
-        <span class="status-label">Fuente</span>
+        <span class="status-label">Operador / fuente</span>
         <span class="badge badge--admin">BehaviorSubject</span>
+        <p class="status-copy">Mantiene el último valor vivo para toda la interfaz.</p>
       </div>
 
-      <div class="checks-list">
-        <div class="check-item" [class.active]="replayChecks.liveUpdates">actualización global inmediata</div>
-        <div class="check-item active">último valor disponible para nuevo suscriptor</div>
-        <div class="check-item">reseteo controlado sin recargar</div>
+      <div class="status-item">
+        <span class="status-label">Resultado visible</span>
+        <span class="status-value status-value--mono">{{ user$ | async | json }}</span>
+        <p class="status-copy">Este snapshot es lo que la UI puede renderizar en este instante.</p>
+      </div>
+    </div>
+
+      <div class="checks-list checks-list--context">
+      <div class="check-item" [class.active]="replayChecks.liveUpdates">
+        la actualización se propaga al instante a toda la vista
+      </div>
+      <div class="check-item active">
+        un suscriptor nuevo recibe el último valor sin esperar otra emisión
+      </div>
+      <div class="check-item" [class.active]="replayChecks.controlledReset">
+        el estado puede reiniciarse sin recargar la pantalla 
       </div>
     </div>
 
     <div class="actions-row">
-      <button class="btn ghost" (click)="updateUser()">Actualizar Usuario</button>
-      <button class="btn primary" (click)="resetUser()">Reset</button>
+      <button class="btn ghost" (click)="updateUser()">Actualizar usuario compartido</button>
+      <button class="btn primary" (click)="resetUser()">Volver al valor inicial</button>
     </div>
   </article>
 
   <!-- ReplaySubject -->
   <article class="card">
-    <h2 class="card__title">📚 ReplaySubject — Historial reactivo</h2>
-    <p class="card__description">Visualiza el buffer vivo: entradas nuevas y salida del más antiguo al llegar al límite.</p>
+    <div class="card__intro">
+      <span class="card__kicker card__kicker--blue">ReplaySubject</span>
+      <h2 class="card__title">📚 Historial retenido para quien llega después</h2>
+      <p class="card__description">
+        <strong>Qué problema resuelve:</strong> un nuevo suscriptor puede necesitar contexto
+        reciente, no solo el último dato.
+      </p>
+      <p class="card__context">
+        <strong>Qué está pasando:</strong> el buffer conserva un pequeño historial y lo actualiza
+        cada vez que entra una nueva emisión.
+      </p>
+    </div>
 
     <div class="replay-summary" [class.is-pulse]="replayPulse">
-      <span class="badge badge--admin">Buffer {{ replayBufferLabel }}</span>
-      <span class="replay-note">{{ replayLatestAction }}</span>
+      <span class="badge badge--admin badge--blue">Buffer {{ replayBufferLabel }}</span>
+      <div>
+        <div class="replay-note replay-note--strong">{{ replayLatestAction }}</div>
+        <div class="replay-note">{{ replayNarrative }}</div>
+      </div>
     </div>
 
     <ul class="history-list">
-      <li *ngFor="let user of usersHistory$ | async">{{ user.nombre }} — {{ user.timestamp }}</li>
+      <li *ngFor="let user of usersHistory$ | async; let isLast = last" [class.is-latest]="isLast">
+        <span class="history-pill">{{ isLast ? 'Nuevo' : 'Historial' }}</span>
+        <div>
+          <strong>{{ user.nombre }}</strong>
+          <small>{{ user.timestamp }}</small>
+        </div>
+      </li>
     </ul>
 
-    <div class="checks-list">
-      <div class="check-item" [class.active]="replayChecks.keepsLatest">mantiene los últimos valores emitidos</div>
-      <div class="check-item" [class.active]="replayChecks.lateSubscription">suscripción tardía recibe historial reciente</div>
-      <div class="check-item" [class.active]="replayChecks.liveUpdates">cada nuevo evento actualiza la lista en vivo</div>
+    <div class="checks-list checks-list--context">
+      <div class="check-item" [class.active]="replayChecks.keepsLatest">
+        mantiene los valores más recientes aunque el flujo siga avanzando
+      </div>
+      <div class="check-item" [class.active]="replayChecks.lateSubscription">
+        una suscripción tardía puede recuperar contexto reciente
+      </div>
+      <div class="check-item" [class.active]="replayChecks.liveUpdates">
+        cada nuevo evento actualiza el historial visible en tiempo real
+      </div>
     </div>
 
     <div class="actions-row">
-      <button class="btn ghost" (click)="addUser()">Agregar nuevo usuario</button>
+      <button class="btn ghost" (click)="addUser()">Agregar usuario al historial</button>
     </div>
   </article>
 
   <!-- Modal trigger -->
   <article class="card card--bridge">
-    <h2 class="card__title">🧪 Siguiente nivel: RxJS Playground (Modal)</h2>
-    <p class="card__description">
-      Aquí viste la base. En el modal verás la ejecución avanzada con pipeline animado, métricas y bitácora pedagógica.
-    </p>
-
-   <div class="bridge-flow">
-      <span>Vista principal</span>
-      <span>→</span>
-      <span>Conceptos base</span>
-      <span>→</span>
-      <span>Modal avanzado</span>
+    <div class="card__intro">
+      <span class="card__kicker card__kicker--cyan">Siguiente paso</span>
+      <h2 class="card__title">🧪 RxJS Playground con flujo, bitácora y contexto humano</h2>
+      <p class="card__description">
+        Aquí viste la idea base. En el modal vas a ver el flujo en movimiento, por qué importa cada
+        operador y qué resultado deja en la interfaz.
+      </p>
     </div>
 
-    <button class="btn primary" (click)="openFlowModal()">Abrir modal de flujo en tiempo real</button>
+   <div class="bridge-flow">
+      <span>Qué problema resuelve</span>
+      <span>→</span>
+      <span>Qué está pasando</span>
+      <span>→</span>
+      <span>Qué resultado ves</span>
+    </div>
+
+    <button class="btn primary" (click)="openFlowModal()">
+      Abrir modal de flujo en tiempo real
+    </button>
   </article>
 </section>
