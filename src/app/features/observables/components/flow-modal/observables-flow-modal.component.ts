@@ -21,7 +21,6 @@ import { ObervablesLabService } from 'src/app/features/observables/data/services
 import { LogCategory, LogEvent } from '../../data/models/LogEvent.model';
 import { TimelineStep } from '../../data/models/TimelineStep.model';
 import { User } from '../../data/models/User.model';
-
 type DemoId =
   | 'cold-hot'
   | 'reactive-input'
@@ -44,11 +43,18 @@ interface StepMetric {
 }
 
 interface DemoExplanation {
-  problem: string;
-  happening: string;
-  operator: string;
-  result: string;
+  whatItDoes: string;
   whyItMatters: string;
+  visibleResult: string;
+  flowBullets: string[];
+}
+
+interface ColdHotCard {
+  mode: 'cold' | 'hot';
+  title: string;
+  summary: string;
+  detailA: string;
+  detailB: string;
 }
 
 @Component({
@@ -57,137 +63,155 @@ interface DemoExplanation {
   styleUrls: ['./observables-flow-modal.component.scss'],
 })
 export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
-
   activeUser!: User;
   logs: LogEvent[] = [];
   runId = 1;
   runtimeStatus = {
-    now: 'Todavía no se está ejecutando ninguna demo.',
-    cancelled: 'No hubo cancelaciones todavía.',
-    ui: 'La interfaz está lista para mostrar el siguiente cambio.',
+    now: 'Elige una demo para ver el siguiente cambio importante.',
+    cancelled: 'Todavía no hubo nada que frenar o reutilizar.',
+    ui: 'La interfaz está lista para mostrar el siguiente resultado.',
   };
 
   tabs: DemoTab[] = [
     {
       id: 'cold-hot',
       title: 'Cold vs Hot',
-      summary: 'Muestra cuándo un flujo duplica trabajo y cuándo puede compartirse.',
+      summary: 'Compara repetir una ejecución contra compartir el mismo resultado.',
     },
     {
       id: 'reactive-input',
       title: 'Input Reactivo',
-      summary: 'Evita pedir al backend por cada tecla y conserva solo la intención final.',
+      summary: 'Evita llamadas innecesarias y conserva solo la última búsqueda útil.',
     },
     {
       id: 'map-operators',
       title: 'Map Operators',
-      summary: 'Compara cancelación, paralelo y secuencia sin perder de vista el resultado.',
+      summary: 'Compara cancelar, paralelizar o respetar el orden de las tareas.',
     },
     {
       id: 'combine-streams',
       title: 'Combine Streams',
-      summary: 'Combina progreso parcial con una respuesta final consolidada.',
+      summary: 'Muestra progreso parcial y luego una respuesta final completa.',
     },
     {
       id: 'error-resilience',
       title: 'Errores + Retry',
-      summary: 'Reintenta, contiene el fallo y protege la experiencia de usuario.',
+      summary: 'Mantiene viva la UI aunque una llamada falle varias veces.',
     },
   ];
 
   demoExplanations: Record<DemoId, DemoExplanation> = {
     'cold-hot': {
-      problem: 'Evitar trabajo duplicado cuando varios consumidores necesitan la misma respuesta.',
-      happening:
-        'Lanzas la misma fuente dos veces para ver cuándo se repite la llamada y cuándo el resultado puede compartirse.',
-      operator: 'shareReplay(1)',
-      result:
-        'La versión hot reutiliza la respuesta; la versión cold vuelve a ejecutar todo desde cero.',
-      whyItMatters:
-        'Esto reduce costo, tiempo y ruido visual cuando varias partes de la UI dependen de los mismos datos.',
+      whatItDoes: 'Cold repite la ejecución. Hot comparte el resultado ya generado.',
+      whyItMatters: 'Evita trabajo duplicado cuando varias partes de la UI necesitan lo mismo.',
+      visibleResult: 'Verás qué suscriptor ejecuta de nuevo y cuál reutiliza la respuesta.',
+      flowBullets: [
+        'Cold: sub 1 ejecuta.',
+        'Cold: sub 2 vuelve a ejecutar.',
+        'Hot: el segundo suscriptor reutiliza.',
+      ],
     },
     'reactive-input': {
-      problem: 'Evitar llamadas al backend en cada tecla y quedarte solo con la búsqueda final.',
-      happening:
-        'El flujo espera una pequeña pausa, descarta texto repetido y luego consulta solo el término más reciente.',
-      operator: 'debounceTime + distinctUntilChanged + switchMap',
-      result:
-        'Solo ves el resultado final útil; las búsquedas viejas se cancelan antes de ensuciar la interfaz.',
-      whyItMatters:
-        'La UI se siente ágil, el backend trabaja menos y el usuario no compite contra respuestas atrasadas.',
+      whatItDoes: 'Evita llamadas innecesarias al backend mientras escribes.',
+      whyItMatters: 'Solo se ejecuta la última búsqueda útil.',
+      visibleResult: 'La UI muestra el resultado final sin mezclar respuestas viejas.',
+      flowBullets: [
+        'Esperando que dejes de escribir.',
+        'Cancelando búsquedas anteriores.',
+        'Ejecutando la última intención.',
+      ],
     },
     'map-operators': {
-      problem: 'Elegir si priorizas lo último, el paralelo o el orden de llegada.',
-      happening:
-        'Una misma fuente emite tareas y comparas cómo cada operador decide qué hacer con ellas.',
-      operator: 'switchMap vs mergeMap vs concatMap',
-      result:
-        'Ves tres estrategias distintas: cancelar, procesar en paralelo o formar una cola ordenada.',
-      whyItMatters: 'Cada caso sirve para una necesidad real distinta en interfaces reactivas.',
+      whatItDoes: 'Muestra tres formas de procesar varias tareas desde la misma fuente.',
+      whyItMatters: 'Te ayuda a elegir entre priorizar lo último, correr todo o respetar el orden.',
+      visibleResult: 'Verás cancelación, paralelo y cola ordenada en una sola corrida.',
+      flowBullets: [
+        'switchMap deja viva la más reciente.',
+        'mergeMap deja correr varias a la vez.',
+        'concatMap respeta turno por turno.',
+      ],
     },
     'combine-streams': {
-      problem: 'Coordinar varias fuentes sin perder la posibilidad de mostrar progreso útil.',
-      happening:
-        'Un flujo te deja avanzar con información parcial y otro espera a tener el paquete completo.',
-      operator: 'switchMap + forkJoin',
-      result: 'Primero puedes mostrar avance; después renderizas una respuesta final consistente.',
-      whyItMatters:
-        'Esto mejora la percepción de velocidad sin sacrificar coherencia en la UI final.',
+      whatItDoes: 'Combina dos fuentes para mostrar avance y cierre final.',
+      whyItMatters: 'La UI puede sentirse rápida sin perder consistencia al final.',
+      visibleResult: 'Primero aparece progreso parcial y luego el paquete completo.',
+      flowBullets: [
+        'Llega una parte de la respuesta.',
+        'La UI ya puede mostrar avance.',
+        'Al final se consolida todo.',
+      ],
     },
     'error-resilience': {
-      problem: 'Evitar que un fallo puntual rompa toda la experiencia.',
-      happening:
-        'Simulas errores, intentas recuperarte automáticamente y aplicas un fallback si ya no conviene insistir.',
-      operator: 'retry + catchError',
-      result: 'La interfaz sigue viva, con una salida controlada incluso cuando la llamada falla.',
-      whyItMatters:
-        'Una UI robusta no colapsa al primer error: informa, intenta recuperarse y sigue acompañando al usuario.',
+      whatItDoes: 'Reintenta una llamada y activa un fallback si sigue fallando.',
+      whyItMatters: 'La interfaz no colapsa por un error puntual.',
+      visibleResult: 'Verás intentos, recuperación y una salida segura para la UI.',
+      flowBullets: [
+        'Se intenta otra vez automáticamente.',
+        'Si no alcanza, se activa fallback.',
+        'La UI sigue mostrando algo útil.',
+      ],
     },
   };
 
+  coldHotCards: ColdHotCard[] = [
+    {
+      mode: 'cold',
+      title: 'COLD',
+      summary: 'Cada suscriptor ejecuta la fuente otra vez.',
+      detailA: 'sub 1 → ejecuta',
+      detailB: 'sub 2 → vuelve a ejecutar',
+    },
+    {
+      mode: 'hot',
+      title: 'HOT',
+      summary: 'Todos los suscriptores comparten el mismo resultado.',
+      detailA: 'sub 1 → ejecuta',
+      detailB: 'sub 2 → reutiliza',
+    },
+  ];
+
   activeTab: DemoId = 'cold-hot';
   searchTerm = '';
-  searchResult =
-    'Escribe un término y observa cómo el flujo espera, filtra y conserva solo la última intención.';
+  searchResult = 'Escribe un término para ver cómo solo sobrevive la última búsqueda útil.';
 
   timeline: TimelineStep[] = [
     {
       operator: 'source',
-      label: 'source',
-      description: 'origen del evento',
-      detail: 'Aquí nace la acción inicial que dispara el flujo.',
+      label: 'entrada',
+      description: 'arranca el flujo',
+      detail: 'Aquí nace la acción que dispara la demo.',
       active: false,
     },
     {
       operator: 'map',
-      label: 'map',
-      description: 'transforma datos',
-      detail: 'Reordena o adapta la información para el siguiente paso.',
+      label: 'proceso',
+      description: 'decide qué sigue',
+      detail: 'El flujo transforma o prioriza la siguiente acción.',
       active: false,
     },
     {
       operator: 'filter',
-      label: 'filter',
-      description: 'valida condiciones',
-      detail: 'Decide si el dato merece seguir avanzando.',
+      label: 'validación',
+      description: 'confirma si avanza',
+      detail: 'Se revisa si la siguiente ejecución vale la pena.',
       active: false,
     },
     {
       operator: 'debounce',
-      label: 'debounce',
-      description: 'espera una pausa',
-      detail: 'Evita reaccionar de más cuando los eventos llegan demasiado rápido.',
+      label: 'pausa',
+      description: 'espera el momento útil',
+      detail: 'Evita reaccionar demasiado rápido cuando llegan muchos eventos.',
       active: false,
     },
     {
       operator: 'subscriber',
-      label: 'subscribe',
+      label: 'resultado',
       description: 'actualiza la UI',
-      detail: 'El resultado final ya puede verse en pantalla.',
+      detail: 'El valor final ya se puede mostrar en pantalla.',
       active: false,
     },
   ];
-  
+
   stepStatus: Record<string, StepStatus> = {
     source: 'idle',
     map: 'idle',
@@ -233,6 +257,10 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  get runtimeHighlights(): string[] {
+    return [this.runtimeStatus.now, this.runtimeStatus.cancelled, this.runtimeStatus.ui];
+  }
+
   get groupedLogs(): { runId: number; events: LogEvent[] }[] {
     const groups = new Map<number, LogEvent[]>();
     for (const log of this.logs) {
@@ -264,16 +292,12 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
 
   triggerSearch(): void {
     this.reactiveSearchStartedAt = performance.now();
-    this.startRun(
-      'La búsqueda reactiva acaba de arrancar y está esperando una pausa útil antes de consultar.',
-    );
+    this.startRun('Esperando una pausa útil antes de lanzar la búsqueda.');
     this.searchInput$.next(this.searchTerm.trim());
   }
 
   runColdVsHot(): void {
-    this.startRun(
-      'Vamos a comparar una fuente que repite trabajo con otra que comparte la respuesta.',
-    );
+    this.startRun('Comparando una fuente que repite trabajo con otra que lo comparte.');
     const start = performance.now();
 
     const cold$ = this.mockHttp('cold-request').pipe(
@@ -281,8 +305,8 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         this.runStep(
           'source',
           'Cold source emitido',
-          'La fuente se ejecuta una vez por cada suscriptor.',
-          'source activó una nueva llamada',
+          'La fuente fría vuelve a empezar cada vez que alguien se suscribe.',
+          'Cold: se volvió a disparar una ejecución.',
           'operator',
         ),
       ),
@@ -293,19 +317,18 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         'result',
         'warning',
         'Cold subscriber #1 recibió respuesta única.',
-        'El primer consumidor obtuvo su dato, pero ese resultado no se comparte.',
-        'Respuesta aislada',
+        'El primer suscriptor obtuvo un valor propio, pero nadie más puede reutilizarlo.',
+        'Resultado aislado',
       );
     });
     cold$.subscribe(() => {
       this.metrics.cancellations += 1;
-      this.runtimeStatus.cancelled =
-        'No hubo cancelación real, pero sí trabajo duplicado por volver a suscribirse a una fuente fría.';
+      this.runtimeStatus.cancelled = 'Cold: el segundo suscriptor repitió todo el trabajo.';
       this.pushLog(
         'cancellation',
         'warning',
         'Cold subscriber #2 disparó una segunda ejecución.',
-        'Se repitió todo el costo de la llamada porque la fuente volvió a empezar desde cero.',
+        'Se repitió todo el costo porque la fuente fría no comparte lo ya resuelto.',
         'Trabajo duplicado',
       );
     });
@@ -316,8 +339,8 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         'result',
         'info',
         'Hot subscriber #1 comparte ejecución.',
-        'La primera suscripción crea la respuesta compartida para los demás consumidores.',
-        'Respuesta compartida',
+        'La primera suscripción genera la respuesta compartida para los demás.',
+        'Resultado compartido',
       ),
     );
     hot$.subscribe(() =>
@@ -325,21 +348,16 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         'result',
         'info',
         'Hot subscriber #2 reutiliza cache.',
-        'El segundo consumidor recibe el valor sin reejecutar la fuente.',
-        'Cache reutilizada',
+        'El segundo suscriptor recibe el mismo valor sin volver a ejecutar la fuente.',
+        'Reutilización',
       ),
     );
 
-    this.finishDemo(
-      start,
-      'Comparación finalizada: ya puedes ver la diferencia entre repetir trabajo y compartir resultado.',
-    );
+    this.finishDemo(start, 'Ya puedes ver cuándo se repite trabajo y cuándo se reutiliza.');
   }
 
   runMapComparison(): void {
-    this.startRun(
-      'La misma fuente alimenta tres estrategias distintas para que compares su comportamiento.',
-    );
+    this.startRun('La misma fuente va a alimentar tres estrategias distintas.');
     const start = performance.now();
 
     const source$ = interval(180).pipe(
@@ -348,8 +366,8 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         this.runStep(
           'source',
           `Source emitió tarea ${idx + 1}`,
-          'Ingresó una nueva tarea al pipeline.',
-          `Llegó la tarea ${idx + 1}`,
+          'Entró una nueva tarea para decidir si se cancela, se paraleliza o se encola.',
+          `Llegó la tarea ${idx + 1}.`,
           'operator',
         ),
       ),
@@ -357,14 +375,14 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
     );
 
     source$.pipe(switchMap((id) => this.mockHttp(`switchMap:${id}`, 320))).subscribe(() => {
-      this.runtimeStatus.cancelled = 'switchMap está dejando viva solo la tarea más reciente.';
+      this.runtimeStatus.cancelled = 'switchMap dejó viva solo la tarea más reciente.';
       this.metrics.cancellations += 1;
       this.pushLog(
         'cancellation',
         'info',
         'switchMap priorizó la última tarea.',
-        'Las tareas anteriores se cancelaron para que la respuesta final llegue fresca.',
-        'Se quedó la última',
+        'Las tareas anteriores dejaron de importar para que gane la respuesta más fresca.',
+        'Solo quedó la última',
       );
     });
 
@@ -375,7 +393,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
           'operator',
           'info',
           'mergeMap ejecutó tareas en paralelo.',
-          'Todas las tareas siguieron avanzando al mismo tiempo.',
+          'Varias tareas siguieron vivas al mismo tiempo.',
           'Paralelo activo',
         ),
       );
@@ -388,20 +406,15 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
           'info',
           'concatMap mantuvo orden FIFO.',
           'Cada tarea esperó su turno para respetar la secuencia.',
-          'Cola ordenada',
+          'Orden respetado',
         ),
       );
 
-    this.finishDemo(
-      start,
-      'La comparación terminó: ahora puedes decidir qué operador se adapta mejor a tu caso.',
-    );
+    this.finishDemo(start, 'Terminó la comparación entre cancelar, paralelizar y encolar.');
   }
 
   runCombineStreams(): void {
-    this.startRun(
-      'Vamos a combinar dos fuentes para mostrar progreso y luego una respuesta completa.',
-    );
+    this.startRun('Combinando dos fuentes para mostrar avance y luego un cierre final.');
     const start = performance.now();
 
     const profile$ = this.mockHttp('perfil', 240).pipe(map(() => 'perfil:listo'));
@@ -414,18 +427,18 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         ),
       )
       .subscribe((value) => {
-         this.runStep(
+        this.runStep(
           'map',
           `update parcial: ${value}`,
-          'El flujo avanza aunque todavía falta una parte de la información.',
-          'Ya puedes mostrar progreso en pantalla',
+          'Ya llegó una parte útil y la interfaz puede mostrar progreso.',
+          'La UI ya puede mostrar avance parcial.',
           'result',
         );
         this.pushLog(
           'result',
           'info',
           `Actualización parcial: ${value}`,
-          'La interfaz ya tiene suficiente contexto para mostrar avance mientras espera lo demás.',
+          'Ya hay contexto suficiente para enseñar avance mientras llega el resto.',
           'Progreso visible',
         );
       });
@@ -434,28 +447,23 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
       this.runStep(
         'subscriber',
         'forkJoin entregó respuesta final agregada',
-        'Ambos streams completaron y ya tienes el paquete final.',
-        'Resultado final consolidado',
+        'Las dos fuentes completaron y ya tienes un único resultado final.',
+        'La respuesta completa ya está lista.',
         'result',
       );
       this.pushLog(
         'result',
         'info',
         `forkJoin final: ${profile} + ${permissions}`,
-        'Ahora sí llegó la respuesta completa para renderizar la vista final.',
-        'Paquete completo',
+        'Ahora sí llegó el paquete completo para renderizar la vista final.',
+        'Resultado final',
       );
-      this.finishDemo(
-        start,
-        'Combinación finalizada: viste cómo convivir con progreso parcial y cierre completo.',
-      );
+      this.finishDemo(start, 'Viste progreso parcial primero y consistencia completa al final.');
     });
   }
 
   runErrorResilience(): void {
-    this.startRun(
-      'Vamos a forzar un error para ver cómo el flujo intenta recuperarse sin romper la experiencia.',
-    );
+    this.startRun('Forzando un error para ver cómo el flujo protege la UI.');
     const start = performance.now();
 
     let attempts = 0;
@@ -466,8 +474,8 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
           this.runStep(
             'source',
             `Intento ${attempts}`,
-            'Se ejecuta una nueva tentativa automática.',
-            `Intento ${attempts} en curso`,
+            'Se lanzó un nuevo intento automático para recuperar la experiencia.',
+            `Intento ${attempts} en curso.`,
             'operator',
           );
           return attempts < 3
@@ -478,7 +486,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         catchError(() => {
           this.markError(
             'retry agotado, aplicando fallback',
-            'Después de intentar recuperarse, el flujo eligió una salida segura para no romper la UI.',
+            'Después de varios intentos, el flujo eligió una salida segura para no romper la UI.',
             'Fallback activado',
           );
           return of('fallback-data');
@@ -489,13 +497,10 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
           'subscriber',
           `Respuesta final: ${response}`,
           'El consumidor recibió una salida estable para seguir renderizando.',
-          'La UI ya puede mostrar una respuesta estable',
+          'La UI ya puede mostrar un estado estable.',
           'result',
         );
-        this.finishDemo(
-          start,
-          'Manejo de error completado: el flujo terminó sin abandonar al usuario.',
-        );
+        this.finishDemo(start, 'La demo terminó sin abandonar al usuario tras el error.');
       });
   }
 
@@ -512,13 +517,13 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
     this.logs = [];
     this.runId += 1;
     this.runtimeStatus = {
-      now: 'Todavía no se está ejecutando ninguna demo.',
-      cancelled: 'No hubo cancelaciones todavía.',
-      ui: 'La interfaz está lista para mostrar el siguiente cambio.',
+      now: 'Elige una demo para ver el siguiente cambio importante.',
+      cancelled: 'Todavía no hubo nada que frenar o reutilizar.',
+      ui: 'La interfaz está lista para mostrar el siguiente resultado.',
     };
     this.searchResult =
       this.activeTab === 'reactive-input'
-        ? 'Escribe un término y observa cómo el flujo espera, filtra y conserva solo la última intención.'
+        ? 'Escribe un término para ver cómo solo sobrevive la última búsqueda útil.'
         : this.searchResult;
   }
 
@@ -536,7 +541,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
     this.resetDemoView();
     this.runtimeStatus.now = nowMessage;
     this.runtimeStatus.ui =
-      'La interfaz está observando el flujo para mostrar el siguiente cambio importante.';
+      'La interfaz está observando el flujo para reflejar el siguiente cambio.';
   }
 
   private bindCoreStreams(): void {
@@ -546,19 +551,18 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
       }),
     );
 
-    // Historial (ReplaySubject)
     this.subs.add(
       this.labService.flowLog$.pipe(takeUntil(this.destroy$)).subscribe((event) => {
         this.runStep(
           event.operator,
           event.label,
           'Evento propagado desde el laboratorio principal.',
-          'El laboratorio principal activó este paso del pipeline',
+          'El laboratorio principal activó este paso del pipeline.',
           'state',
         );
       }),
     );
-  }  
+  }
 
   private bindReactiveSearch(): void {
     this.subs.add(
@@ -569,9 +573,9 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
           tap(() =>
             this.runStep(
               'debounce',
-              'debounceTime + distinctUntilChanged',
-              'El flujo esperó una pausa y descartó texto repetido.',
-              'La búsqueda se calmó antes de consultar',
+              'Pausa útil detectada',
+              'El flujo esperó un momento útil antes de consultar.',
+              'Esperando menos ruido antes de buscar.',
               'operator',
             ),
           ),
@@ -579,19 +583,19 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
             if (!term) {
               this.metrics.cancellations += 1;
               this.runtimeStatus.cancelled =
-                'La búsqueda se detuvo porque no había un término útil para consultar.';
-              this.runtimeStatus.ui = 'La interfaz siguió estable: evitó una llamada innecesaria.';
+                'La búsqueda se frenó porque no había un término útil.';
+              this.runtimeStatus.ui = 'La interfaz evitó una llamada innecesaria.';
               return of('Sin término de búsqueda.');
             }
             this.runStep(
               'map',
-              'switchMap cancela peticiones previas',
-              'Solo se mantiene la búsqueda más reciente.',
-              'Nos quedamos con la intención final del usuario',
+              'Se priorizó la última búsqueda',
+              'Solo se mantiene viva la intención más reciente del usuario.',
+              'Cancelando búsquedas anteriores.',
               'cancellation',
             );
             this.runtimeStatus.cancelled =
-              'switchMap está frenando búsquedas anteriores para que solo sobreviva la última.';
+              'Las búsquedas anteriores dejaron de importar para priorizar la última.';
             return this.mockHttp(`search:${term}`, 360).pipe(map(() => `Resultado para: ${term}`));
           }),
         )
@@ -601,12 +605,12 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
             'subscriber',
             result,
             'La interfaz ya puede mostrar el resultado final sin ruido de búsquedas anteriores.',
-            'La interfaz acaba de actualizarse con el resultado correcto',
+            'Ejecutando la última búsqueda útil.',
             'result',
           );
           this.finishDemo(
             this.reactiveSearchStartedAt || performance.now(),
-            'La búsqueda reactiva terminó mostrando solo lo que realmente importaba.',
+            'La búsqueda terminó mostrando solo lo que realmente importaba.',
           );
         }),
     );
@@ -625,7 +629,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
 
     this.runtimeStatus.now = nowMessage;
     this.runtimeStatus.ui =
-      'La interfaz está recibiendo señales del flujo y preparándose para reflejar el siguiente cambio.';
+      'La interfaz está recibiendo señales del flujo y preparándose para reflejar el cambio.';
 
     this.pushLog(
       category,
@@ -647,8 +651,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
     this.metrics.errors += 1;
     this.runtimeStatus.now =
       'Apareció un error controlado y el flujo está protegiendo la experiencia.';
-    this.runtimeStatus.ui =
-      'La interfaz no se rompió: está esperando un fallback o una recuperación segura.';
+    this.runtimeStatus.ui = 'La interfaz no se rompió: está esperando una salida segura.';
     this.pushLog('error', 'error', `error → ${message}`, humanMessage, title);
   }
 
@@ -663,8 +666,8 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
         this.runStep(
           'filter',
           `validación previa de ${label}`,
-          'Se evalúan condiciones antes de continuar con la llamada.',
-          'Se está validando si la llamada tiene sentido',
+          'Se confirma si esta llamada tiene sentido antes de continuar.',
+          'Validando si conviene seguir con la llamada.',
           'http',
         ),
       ),
@@ -675,7 +678,7 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
           'info',
           `http simulado completado: ${label}`,
           'La simulación terminó y el recurso temporal ya quedó liberado.',
-          'Request completada',
+          'HTTP completado',
         ),
       ),
     );
@@ -699,14 +702,15 @@ export class ObservablesFlowModalComponent implements OnInit, OnDestroy {
       executionLabel: `Ejecución #${this.runId}`,
     });
 
-    if (this.logs.length > 24) {
+    if (this.logs.length > 18) {
       this.logs.pop();
     }
   }
+
   private getLogTitle(category: LogCategory): string {
     const titles: Record<LogCategory, string> = {
       http: 'HTTP',
-      operator: 'Operador',
+      operator: 'Proceso',
       cancellation: 'Cancelación',
       result: 'Resultado',
       error: 'Error',

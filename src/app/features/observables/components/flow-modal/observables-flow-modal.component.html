@@ -1,11 +1,9 @@
 <div class="flow-modal">
   <div class="modal-head">
     <div>
-      <span class="modal-kicker">Aprender RxJS viendo qué cambia y por qué importa</span>
+      <span class="modal-kicker">RxJS en 5 segundos: qué hace, qué pasa y qué resultado deja</span>
       <h2 class="observables-title">🔎 RxJS Playground — Flujo avanzado</h2>
-      <p class="modal-intro">
-        Patrón mental: <strong>problema → flujo → operador → resultado visible</strong>.
-      </p>
+      <p class="modal-intro">Menos teoría, más contraste visual y resultado inmediato.</p>
     </div>
     <button class="observables-close" (click)="close()" aria-label="Cerrar modal">✕</button>
   </div>
@@ -24,22 +22,36 @@
   <div class="modal-layout">
     <section class="modal-left">
       <section class="playground-actions" [ngSwitch]="activeTab">
-        <div *ngSwitchCase="'cold-hot'" class="demo-box">
-          <span class="demo-box__kicker">Qué problema resolvemos</span>
+        <div *ngSwitchCase="'cold-hot'" class="demo-box demo-box--contrast">
+          <span class="demo-box__kicker">Qué hace</span>
           <h3>Cold vs Hot</h3>
-          <p>
-            Comparamos una fuente que repite trabajo con otra que comparte la respuesta sin volver a
-            empezar.
-          </p>
+          <p class="demo-box__lead">{{ activeExplanation.whatItDoes }}</p>
+          <p class="demo-box__support">{{ activeExplanation.whyItMatters }}</p>
+
+          <div class="cold-hot-grid">
+            <article
+              *ngFor="let card of coldHotCards"
+              class="mode-card"
+              [class.mode-card--cold]="card.mode === 'cold'"
+              [class.mode-card--hot]="card.mode === 'hot'"
+            >
+              <span class="mode-card__title">{{ card.title }}</span>
+              <p class="mode-card__summary">{{ card.summary }}</p>
+              <ul>
+                <li>{{ card.detailA }}</li>
+                <li>{{ card.detailB }}</li>
+              </ul>
+            </article>
+          </div>
+
           <button class="btn primary" (click)="runColdVsHot()">Ejecutar demo</button>
         </div>
 
         <div *ngSwitchCase="'reactive-input'" class="demo-box">
-          <span class="demo-box__kicker">Qué problema resolvemos</span>
+          <span class="demo-box__kicker">Qué hace</span>
           <h3>Input Reactivo</h3>
-           <p>
-            Evitar requests por cada tecla y quedarnos solo con la última intención del usuario.
-          </p>
+          <p class="demo-box__lead">{{ activeExplanation.whatItDoes }}</p>
+          <p class="demo-box__support">{{ activeExplanation.whyItMatters }}</p>
           <div class="search-row">
             <input [(ngModel)]="searchTerm" placeholder="Ej: angular rxjs" />
             <button class="btn primary" (click)="triggerSearch()">Buscar</button>
@@ -47,32 +59,27 @@
           <p class="result">{{ searchResult }}</p>
         </div>
 
-      <div *ngSwitchCase="'map-operators'" class="demo-box">
-          <span class="demo-box__kicker">Qué problema resolvemos</span>
+        <div *ngSwitchCase="'map-operators'" class="demo-box">
+          <span class="demo-box__kicker">Qué hace</span>
           <h3>switchMap vs mergeMap vs concatMap</h3>
-          <p>
-            Ver cuándo te conviene cancelar, ejecutar en paralelo o respetar estrictamente el orden.
-          </p>
+          <p class="demo-box__lead">{{ activeExplanation.whatItDoes }}</p>
+          <p class="demo-box__support">{{ activeExplanation.whyItMatters }}</p>
           <button class="btn primary" (click)="runMapComparison()">Comparar operadores</button>
         </div>
 
-      <div *ngSwitchCase="'combine-streams'" class="demo-box">
-          <span class="demo-box__kicker">Qué problema resolvemos</span>
+        <div *ngSwitchCase="'combine-streams'" class="demo-box">
+          <span class="demo-box__kicker">Qué hace</span>
           <h3>combineLatest / forkJoin</h3>
-          <p>
-            Coordinar varias fuentes para mostrar avance útil y luego una respuesta final
-            consistente.
-          </p>
+          <p class="demo-box__lead">{{ activeExplanation.whatItDoes }}</p>
+          <p class="demo-box__support">{{ activeExplanation.whyItMatters }}</p>
           <button class="btn primary" (click)="runCombineStreams()">Ejecutar combinación</button>
         </div>
 
-      <div *ngSwitchCase="'error-resilience'" class="demo-box">
-          <span class="demo-box__kicker">Qué problema resolvemos</span>
+        <div *ngSwitchCase="'error-resilience'" class="demo-box">
+          <span class="demo-box__kicker">Qué hace</span>
           <h3>retry + catchError</h3>
-          <p>
-            Evitar que un error puntual rompa toda la experiencia y dejar una salida segura para la
-            UI.
-          </p>
+          <p class="demo-box__lead">{{ activeExplanation.whatItDoes }}</p>
+          <p class="demo-box__support">{{ activeExplanation.whyItMatters }}</p>
           <button class="btn primary" (click)="runErrorResilience()">Simular error 500</button>
         </div>
       </section>
@@ -81,7 +88,7 @@
         <div class="section-head">
           <div>
             <h3>Pipeline en vivo</h3>
-            <p>Observa cómo viaja el flujo y qué hace cada nodo cuando se activa.</p>
+            <p>El flujo se ilumina paso a paso para mostrar qué parte está activa ahora.</p>
           </div>
           <span class="timeline-active" *ngIf="activeTimelineStep as step"
             >Activo: {{ step.label }} · {{ step.description }}</span
@@ -108,6 +115,13 @@
       </section>
 
       <section class="status-box">
+        <div class="section-head section-head--stacked">
+          <div>
+            <h3>Resultado actual del flujo</h3>
+            <p>Este es el valor que está circulando por el stream ahora mismo.</p>
+          </div>
+          <span class="value-chip">Valor emitido ahora</span>
+        </div>
         <div class="status-header">
           <span class="badge active">● ACTIVO</span>
           <span class="source">{{ activeTabSummary }}</span>
@@ -119,70 +133,49 @@
     <aside class="modal-right">
       <section class="explain-box">
         <h3>Qué estás viendo</h3>
-        <div class="explain-block">
-          <span class="explain-label">Qué problema resolvemos</span>
-          <p>{{ activeExplanation.problem }}</p>
+        <div class="section-head section-head--stacked">
+          <div>
+            <h3>Resumen rápido</h3>
+            <p>Solo lo necesario para entender la demo sin leer bloques largos.</p>
+          </div>
         </div>
-        <div class="explain-block">
-          <span class="explain-label">Qué está pasando</span>
-          <p>{{ activeExplanation.happening }}</p>
+
+        <div class="summary-line">
+          <span class="explain-label">Qué hace</span>
+          <p>{{ activeExplanation.whatItDoes }}</p>
         </div>
-        <div class="explain-block">
-          <span class="explain-label">Operador clave</span>
-          <strong class="operator-pill">{{ activeExplanation.operator }}</strong>
-        </div>
-        <div class="explain-block">
-          <span class="explain-label">Resultado que ves</span>
-          <p>{{ activeExplanation.result }}</p>
-        </div>
-        <div class="explain-block explain-block--soft">
-          <span class="explain-label">Por qué debería importarte</span>
+        <div class="summary-line">
+          <span class="explain-label">Por qué importa</span>
           <p>{{ activeExplanation.whyItMatters }}</p>
+        </div>
+        <div class="summary-line">
+          <span class="explain-label">Qué pasa ahora</span>
+          <ul class="summary-bullets">
+            <li *ngFor="let bullet of activeExplanation.flowBullets">{{ bullet }}</li>
+          </ul>
+        </div>
+        <div class="summary-line">
+          <span class="explain-label">Resultado visible</span>
+          <p>{{ activeExplanation.visibleResult }}</p>
         </div>
       </section>
 
       <section class="runtime-box">
-        <h3>Ahora mismo</h3>
-        <ul>
-          <li><strong>Qué está pasando:</strong> {{ runtimeStatus.now }}</li>
-          <li><strong>Qué se frenó:</strong> {{ runtimeStatus.cancelled }}</li>
-          <li><strong>Qué hace la interfaz:</strong> {{ runtimeStatus.ui }}</li>
+        <div class="section-head section-head--stacked">
+          <div>
+            <h3>Qué está pasando</h3>
+            <p>Tres pistas rápidas para entender el estado actual del flujo.</p>
+          </div>
+        </div>
+        <ul class="runtime-list">
+          <li *ngFor="let item of runtimeHighlights">{{ item }}</li>
         </ul>
       </section>
-
-      <section class="metrics">
-        <div class="metric-card">
-          <span class="metric-label">Emisiones</span>
-          <strong class="metric-value">{{ metrics.emissions }}</strong>
-          <p class="metric-copy">Cuántas veces avanzó el flujo durante esta ejecución.</p>
-        </div>
-        <div class="metric-card metric-card--error">
-          <span class="metric-label">Errores</span>
-          <strong class="metric-value">{{ metrics.errors }}</strong>
-          <p class="metric-copy">Fallos controlados que la UI logró contener.</p>
-        </div>
-        <div class="metric-card">
-          <div class="metric-card metric-card--warning"></div>
-          <span class="metric-label">Cancelaciones</span>
-          <strong class="metric-value">{{ metrics.cancellations }}</strong>
-          <p class="metric-copy">
-            Ejecuciones previas que se detuvieron para priorizar la más útil.
-          </p>
-        </div>
-        <div class="metric-card metric-card--info">
-          <span class="metric-label">Latencia</span>
-          <strong class="metric-value">{{ metrics.latencyMs }}ms</strong>
-          <p class="metric-copy">Tiempo de respuesta de la simulación actual.</p>
-        </div>
-        <button class="btn ghost metrics__reset" (click)="resetDemoView()">Reset demo</button>
-      </section>
-      <section class="log-box">
-        <div class="section-head">
+      <section class="log-box log-box--priority">
+        <div class="section-head section-head--stacked">
           <div>
-            <h3>📜 Bitácora pedagógica</h3>
-            <p>
-              Cada ejecución separa eventos por tipo para que el flujo se lea como una historia.
-            </p>
+            <h3>📜 Bitácora</h3>
+            <p>Separada por ejecución y enfocada solo en cambios relevantes.</p>
           </div>
         </div>
         <div class="run-group" *ngFor="let group of groupedLogs">
@@ -205,6 +198,30 @@
             </li>
           </ul>
         </div>
+      </section>
+
+      <section class="metrics">
+        <div class="metric-card metric-card--process">
+          <span class="metric-label">Emisiones</span>
+          <strong class="metric-value">{{ metrics.emissions }}</strong>
+          <p class="metric-copy">Cuántas veces avanzó el flujo en esta ejecución.</p>
+        </div>
+        <div class="metric-card metric-card--error">
+          <span class="metric-label">Errores</span>
+          <strong class="metric-value">{{ metrics.errors }}</strong>
+          <p class="metric-copy">Fallos controlados que la UI logró contener.</p>
+        </div>
+        <div class="metric-card metric-card--warning">
+          <span class="metric-label">Cancelaciones</span>
+          <strong class="metric-value">{{ metrics.cancellations }}</strong>
+          <p class="metric-copy">Acciones frenadas para priorizar la más útil.</p>
+        </div>
+        <div class="metric-card metric-card--success">
+          <span class="metric-label">Latencia</span>
+          <strong class="metric-value">{{ metrics.latencyMs }}ms</strong>
+          <p class="metric-copy">Tiempo total de la simulación actual.</p>
+        </div>
+        <button class="btn ghost metrics__reset" (click)="resetDemoView()">Reset demo</button>
       </section>
     </aside>
   </div>
