@@ -1,100 +1,144 @@
 <!-- Interceptors Test Dashboard -->
 <section class="interceptors-dashboard">
-
   <header class="interceptors-dashboard__header">
-    <h1 class="interceptors-dashboard__title">🌐 HTTP Interceptors Dashboard</h1>
+    <h1 class="interceptors-dashboard__title">🌐 HTTP Interceptors DevTools View</h1>
     <p class="interceptors-dashboard__subtitle">
-      Vista técnica para validación de interceptores HTTP y flujo async
+        Simulación técnica del pipeline HTTP con estado reactivo y errores globales.
     </p>
   </header>
 
   <!-- Estado HTTP -->
-  <article class="card card--status">
-    <h2 class="card__title">Estado del entorno HTTP</h2>
+  <article class="card">
+    <h2 class="section-title">1) HTTP Environment</h2>
+    <p class="section-subtitle">
+      AuthInterceptor adjunta JWT automáticamente. LoaderInterceptor sincroniza estado global de carga vía RxJS.
+    </p>
 
     <div class="status-grid">
       <div class="status-item">
         <span class="status-label">Token activo</span>
-        <span class="status-value status-value--mono">
-          {{ token || '— Sin token —' }}
-        </span>
+        <span class="status-value status-value--mono">{{ token || '— Sin token —' }}</span>
       </div>
 
       <div class="status-item">
         <span class="status-label">AuthInterceptor</span>
-        <span class="badge badge--admin-success">Activo</span>
+        <span class="status-badge" [class.inactive]="!authActive">{{ authActive ? 'ACTIVE' : 'IDLE' }}</span>
       </div>
 
       <div class="status-item">
         <span class="status-label">LoaderInterceptor</span>
-        <span class="badge badge--admin-success">Activo</span>
+        <span class="status-badge" [class.inactive]="!loaderActive">{{ loaderActive ? 'ON' : 'OFF' }}</span>
       </div>
 
-      <div class="actions-row">
-        <button class="btn ghost" (click)="setGuestToken()">
-          Set Token Guest
-        </button>
+      <div class="status-item">
+        <span class="status-label">ErrorInterceptor</span>
+        <span class="status-badge" [class.inactive]="!errorActive">{{ errorActive ? 'ACTIVE' : 'IDLE' }}</span>
+      </div>
 
-        <button class="btn primary" (click)="setAdminToken()">
-          Set Token Admin
-        </button>
+      <div class="status-item">
+          <span class="status-label">Request status</span>
+          <span [class]="statusClass">{{ lastStatus }}</span>
       </div>
     </div>
-  </article>
 
   <!-- Petición -->
-  <article class="card card--actions">
-    <h2 class="card__title">Petición de prueba</h2>
-
-    <p class="card__description">
-      Endpoint simulado para demostrar headers, loader y manejo global de errores.
-    </p>
-
-    <div class="request-meta">
-      <span><strong>Endpoint:</strong> /api/users</span>
-      <span><strong>Método:</strong> GET</span>
+    <div class="actions-row">
+      <button class="btn ghost" (click)="setGuestToken()">Set Token Guest</button>
+      <button class="btn primary" (click)="setAdminToken()">Set Token Admin</button>
+      <button class="btn primary" (click)="sendRequest()">Enviar petición GET /api/users</button>
     </div>
 
-    <button class="btn primary" (click)="sendRequest()">Enviar petición</button>
+    <div class="loader-shell" *ngIf="loaderActive">
+      <div class="loader-bar"></div>
+    </div>
   </article>
 
-  <!-- Estado petición -->
   <article class="card">
-    <h2 class="card__title">Estado de la petición</h2>
+    <h2 class="section-title">2) Request Pipeline</h2>
+    <p class="section-subtitle">
+      Flujo secuencial del request desde el cliente hasta la respuesta, incluyendo mutación de headers.
+    </p>
 
-    <ul class="request-status">
-      <li>✔ Header Authorization agregado</li>
-      <li>✔ Loader ON → Loader OFF</li>
-      <li>✔ delay(1000) aplicado</li>
-      <li>✔ finalize() ejecutado</li>
-    </ul>
+    <div class="pipeline-row">
+      <ng-container *ngFor="let step of pipelineSteps; let last = last">
+        <div class="pipeline-step" [class.active]="step.state === 'active'" [class.done]="step.state === 'done'"
+          [class.error]="step.state === 'error'">
+          <strong>{{ step.label }}</strong>
+          <span>{{ step.detail }}</span>
+        </div>
+        <div class="pipeline-line" *ngIf="!last"></div>
+      </ng-container>
+    </div>
+
+    <div class="compare-grid">
+      <div>
+        <h3>Request original</h3>
+        <pre class="code-block">{{ beforeRequest }}</pre>
+      </div>
+      <div>
+        <h3>Request interceptado</h3>
+        <pre class="code-block">{{ interceptedRequest }}</pre>
+      </div>
+    </div>
+
+  <!-- Estado petición -->
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let item of timeline">
+        <span class="timeline-dot" [class.active]="item.active"></span>
+        <span>{{ item.label }}</span>
+      </div>
+    </div>
   </article>
 
   <!-- Resultado -->
   <article class="card">
-    <h2 class="card__title">Resultado</h2>
-
-    <ul class="result-list">
-      <li *ngFor="let user of users">
-        {{ user }}
-      </li>
-    </ul>
-  </article>
-
-  <!-- Errores -->
-  <article class="card card--actions">
-    <h2 class="card__title">Simulación de errores</h2>
-
-    <p class="card__description">
-      Pruebas de manejo global de errores HTTP.
+    <h2 class="section-title">3) Execution Log</h2>
+    <p class="section-subtitle">
+      Registro técnico por etapa para inspección de comportamiento de interceptores y finalize().
     </p>
 
-    <div class="actions-row">  
-      <button class="btn ghost" (click)="simulate401()">Simular 401</button>
-      <button class="btn ghost" (click)="simulate403()">Simular 403</button>
-      <button class="btn ghost" (click)="simulate500()">Simular 500</button>
+    <div class="log-panel">
+      <div *ngFor="let entry of logEntries" class="log-entry" [ngClass]="entry.type">
+        [{{ entry.type | uppercase }}] {{ entry.message }}
+      </div>
+      <div *ngIf="!logEntries.length" class="log-entry">[INFO] Ejecuta una petición para iniciar el trace.</div>
     </div>
   </article>
 
+  <!-- Errores -->
+  <article class="card">
+    <h2 class="section-title">4) Result & Error Simulation</h2>
+    <p class="section-subtitle">
+      ErrorInterceptor centraliza acciones HTTP: 401 logout, 403 acceso denegado y 500 fallback UI.
+    </p>
+
+    <div class="result-grid">
+      <div>
+        <h3>Resultado</h3>
+        <ul class="result-list">
+          <li *ngFor="let user of users">{{ user }}</li>
+          <li *ngIf="!users.length">Sin datos cargados.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Simulación de errores</h3>
+        <div class="actions-row">
+          <button class="btn ghost" (click)="simulate401()">401 Token inválido</button>
+          <button class="btn ghost" (click)="simulate403()">403 Sin permisos</button>
+          <button class="btn ghost" (click)="simulate500()">500 Error servidor</button>
+        </div>
+        <p class="error-flow">{{ currentErrorFlow }}</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="card portfolio-note">
+    <h2 class="section-title">Portfolio Note</h2>
+    <p>
+      Este módulo demuestra HTTP Interceptors en Angular para autenticación, manejo global de errores
+      y control reactivo de estado mediante RxJS.
+    </p>
+  </article>
 </section>
 
