@@ -1,144 +1,228 @@
-<!-- Interceptors Test Dashboard -->
-<section class="interceptors-dashboard">
-  <header class="interceptors-dashboard__header">
-    <h1 class="interceptors-dashboard__title">🌐 HTTP Interceptors DevTools View</h1>
-    <p class="interceptors-dashboard__subtitle">
-        Simulación técnica del pipeline HTTP con estado reactivo y errores globales.
-    </p>
+<section class="interceptors-dashboard background-soft">
+  <header class="interceptors-dashboard__header fade-in">
+    <div>
+      <p class="eyebrow">Angular HTTP Simulator</p>
+      <h1 class="interceptors-dashboard__title">Interceptors Lab</h1>
+      <p class="interceptors-dashboard__subtitle">
+        Pipeline HTTP real con mutacion de request, side effects globales, bloqueo por rol,
+        transformacion de response y manejo centralizado de errores.
+      </p>
+    </div>
+    <span class="status-pill" [ngClass]="'status-' + vm.statusTone">{{ vm.lastStatus }}</span>
   </header>
 
-  <!-- Estado HTTP -->
-  <article class="card">
-    <h2 class="section-title">1) HTTP Environment</h2>
-    <p class="section-subtitle">
-      AuthInterceptor adjunta JWT automáticamente. LoaderInterceptor sincroniza estado global de carga vía RxJS.
-    </p>
+  <article class="card fade-in">
+    <div class="card-head">
+      <div>
+        <h2 class="section-title">HTTP Environment</h2>
+        <p class="section-subtitle" [innerHTML]="formatRichText('El dashboard se alimenta desde interceptores reales aislados por contexto del lab.')">
+        </p>
+      </div>
+
+      <div class="actions-row actions-row--compact">
+        <button class="btn ghost" (click)="setGuestToken()">Set Guest</button>
+        <button class="btn primary" (click)="setAdminToken()">Set Admin</button>
+        <button class="btn primary" (click)="loadUsers()">GET /api/users</button>
+      </div>
+    </div>
 
     <div class="status-grid">
       <div class="status-item">
         <span class="status-label">Token activo</span>
-        <span class="status-value status-value--mono">{{ token || '— Sin token —' }}</span>
+        <span class="token-chip request-flash">{{ vm.tokenPreview }}</span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Rol activo</span>
+        <span class="role-badge" [class.admin]="isAdmin" [class.guest]="!isAdmin">{{ vm.role }}</span>
       </div>
 
       <div class="status-item">
         <span class="status-label">AuthInterceptor</span>
-        <span class="status-badge" [class.inactive]="!authActive">{{ authActive ? 'ACTIVE' : 'IDLE' }}</span>
+        <span [class]="statusPillClass(authStepState)">{{ authStepState | uppercase }}</span>
       </div>
 
       <div class="status-item">
         <span class="status-label">LoaderInterceptor</span>
-        <span class="status-badge" [class.inactive]="!loaderActive">{{ loaderActive ? 'ON' : 'OFF' }}</span>
+        <span [class]="statusPillClass(loaderStepState)">{{ loaderStepState | uppercase }}</span>
       </div>
 
       <div class="status-item">
         <span class="status-label">ErrorInterceptor</span>
-        <span class="status-badge" [class.inactive]="!errorActive">{{ errorActive ? 'ACTIVE' : 'IDLE' }}</span>
-      </div>
-
-      <div class="status-item">
-          <span class="status-label">Request status</span>
-          <span [class]="statusClass">{{ lastStatus }}</span>
+        <span [class]="statusPillClass(errorStepState)">{{ errorStepState | uppercase }}</span>
       </div>
     </div>
 
-  <!-- Petición -->
-    <div class="actions-row">
-      <button class="btn ghost" (click)="setGuestToken()">Set Token Guest</button>
-      <button class="btn primary" (click)="setAdminToken()">Set Token Admin</button>
-      <button class="btn primary" (click)="sendRequest()">Enviar petición GET /api/users</button>
-    </div>
-
-    <div class="loader-shell" *ngIf="loaderActive">
+    <div class="loader-shell" *ngIf="vm.loaderActive">
       <div class="loader-bar"></div>
     </div>
   </article>
 
-  <article class="card">
-    <h2 class="section-title">2) Request Pipeline</h2>
-    <p class="section-subtitle">
-      Flujo secuencial del request desde el cliente hasta la respuesta, incluyendo mutación de headers.
+  <article class="card fade-in">
+    <h2 class="section-title">Pipeline With State</h2>
+    <p class="section-subtitle" [innerHTML]="formatRichText('Cada nodo cambia entre idle, active, done, error y blocked segun el flujo real del pipeline HTTP.')">
     </p>
 
     <div class="pipeline-row">
-      <ng-container *ngFor="let step of pipelineSteps; let last = last">
-        <div class="pipeline-step" [class.active]="step.state === 'active'" [class.done]="step.state === 'done'"
-          [class.error]="step.state === 'error'">
-          <strong>{{ step.label }}</strong>
-          <span>{{ step.detail }}</span>
+      <ng-container *ngFor="let step of vm.pipelineSteps; let last = last">
+        <div
+          class="pipeline-step"
+          [class.active]="step.state === 'active'"
+          [class.done]="step.state === 'done'"
+          [class.error]="step.state === 'error'"
+          [class.blocked]="step.state === 'blocked'">
+          <strong class="pipeline-title">{{ step.label }}</strong>
+          <span class="pipeline-desc">{{ step.detail }}</span>
+          <small class="pipeline-state" [ngClass]="'text-' + (step.state === 'done' ? 'success' : step.state === 'error' || step.state === 'blocked' ? 'error' : step.state === 'active' ? 'accent' : 'secondary')">
+            {{ displayStateLabel(step.state) }}
+          </small>
         </div>
         <div class="pipeline-line" *ngIf="!last"></div>
       </ng-container>
     </div>
 
+    <div class="flow-banner" [innerHTML]="formatFlowBanner(vm.currentFlow)">
+    </div>
+  </article>
+
+  <article class="card fade-in">
+    <h2 class="section-title">Request / Response Diff</h2>
+    <p class="section-subtitle" [innerHTML]="formatRichText('Comparacion dinamica del request antes y despues de AuthInterceptor, y del payload original frente al response transformado.')">
+    </p>
+
     <div class="compare-grid">
       <div>
         <h3>Request original</h3>
-        <pre class="code-block">{{ beforeRequest }}</pre>
+        <pre class="code-block block-request" [innerHTML]="formatBlock(vm.requestOriginal, 'request')"></pre>
       </div>
+
       <div>
         <h3>Request interceptado</h3>
-        <pre class="code-block">{{ interceptedRequest }}</pre>
-      </div>
-    </div>
-
-  <!-- Estado petición -->
-    <div class="timeline">
-      <div class="timeline-item" *ngFor="let item of timeline">
-        <span class="timeline-dot" [class.active]="item.active"></span>
-        <span>{{ item.label }}</span>
-      </div>
-    </div>
-  </article>
-
-  <!-- Resultado -->
-  <article class="card">
-    <h2 class="section-title">3) Execution Log</h2>
-    <p class="section-subtitle">
-      Registro técnico por etapa para inspección de comportamiento de interceptores y finalize().
-    </p>
-
-    <div class="log-panel">
-      <div *ngFor="let entry of logEntries" class="log-entry" [ngClass]="entry.type">
-        [{{ entry.type | uppercase }}] {{ entry.message }}
-      </div>
-      <div *ngIf="!logEntries.length" class="log-entry">[INFO] Ejecuta una petición para iniciar el trace.</div>
-    </div>
-  </article>
-
-  <!-- Errores -->
-  <article class="card">
-    <h2 class="section-title">4) Result & Error Simulation</h2>
-    <p class="section-subtitle">
-      ErrorInterceptor centraliza acciones HTTP: 401 logout, 403 acceso denegado y 500 fallback UI.
-    </p>
-
-    <div class="result-grid">
-      <div>
-        <h3>Resultado</h3>
-        <ul class="result-list">
-          <li *ngFor="let user of users">{{ user }}</li>
-          <li *ngIf="!users.length">Sin datos cargados.</li>
-        </ul>
+        <pre class="code-block block-request request-flash" [innerHTML]="formatBlock(vm.requestIntercepted, 'request')"></pre>
       </div>
 
       <div>
-        <h3>Simulación de errores</h3>
-        <div class="actions-row">
-          <button class="btn ghost" (click)="simulate401()">401 Token inválido</button>
-          <button class="btn ghost" (click)="simulate403()">403 Sin permisos</button>
-          <button class="btn ghost" (click)="simulate500()">500 Error servidor</button>
+        <h3>Response original</h3>
+        <pre class="code-block" [ngClass]="vm.errorActive ? 'block-error' : 'block-response'" [innerHTML]="formatBlock(vm.responseOriginal, vm.errorActive ? 'error' : 'response')"></pre>
+      </div>
+
+      <div>
+        <h3>Response transformada</h3>
+        <pre class="code-block response-glow" [ngClass]="vm.errorActive ? 'block-error' : 'block-response'" [innerHTML]="formatBlock(vm.responseTransformed, vm.errorActive ? 'error' : 'response')"></pre>
+        <div class="transform-info" *ngIf="showTransformInfo">
+          <span class="transform-title">{{ transformHeadline }}</span>
+          <span class="transform-desc">{{ transformDescription }}</span>
         </div>
-        <p class="error-flow">{{ currentErrorFlow }}</p>
       </div>
     </div>
   </article>
 
-  <article class="card portfolio-note">
-    <h2 class="section-title">Portfolio Note</h2>
-    <p>
-      Este módulo demuestra HTTP Interceptors en Angular para autenticación, manejo global de errores
-      y control reactivo de estado mediante RxJS.
+  <article class="card fade-in">
+    <h2 class="section-title">Protected Actions</h2>
+    <p class="section-subtitle" [innerHTML]="formatRichText('DELETE /users/:id pasa por el mismo pipeline. Si el rol no es ADMIN, el request se bloquea antes del backend.')">
     </p>
+
+    <div class="result-layout">
+      <div class="result-panel">
+        <div class="result-panel__head">
+          <h3>Users</h3>
+          <span class="role-chip" [class.role-chip--admin]="isAdmin">{{ isAdmin ? 'ADMIN' : 'GUEST' }}</span>
+        </div>
+
+        <div class="users-table-shell">
+          <table class="users-table" *ngIf="users.length">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of users" [class.row-delete]="isDeleting(user.id)">
+                <td>
+                  <strong>{{ user.username }}</strong>
+                  <span>{{ user.email }}</span>
+                </td>
+                <td>{{ user.roleLabel }}</td>
+                <td>{{ user.createdAtLabel }}</td>
+                <td>
+                  <button
+                    class="btn btn-danger"
+                    [disabled]="!isAdmin"
+                    [attr.title]="isAdmin ? 'Eliminar usuario' : 'Requiere permisos ADMIN'"
+                    (click)="deleteUser(user)">
+                    {{ isDeleting(user.id) ? 'Eliminando...' : 'Delete' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-state" *ngIf="!users.length">
+            <strong>No users loaded</strong>
+            <span>Ejecuta `GET /api/users` para poblar el resultado transformado.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-panel">
+        <h3>Error Simulation</h3>
+        <div class="actions-row">
+          <button class="btn ghost btn-401" (click)="simulate401()">Simular 401</button>
+          <button class="btn ghost btn-403" (click)="simulate403()">Simular 403</button>
+          <button class="btn ghost btn-500" (click)="simulate500()">Simular 500</button>
+        </div>
+
+        <div class="result-state" [ngClass]="vm.resultState">
+          <strong>{{ vm.resultState | uppercase }}</strong>
+          <p>{{ vm.resultMessage }}</p>
+        </div>
+
+        <div class="error-card" *ngIf="vm.resultState === 'server-error'">
+          <span class="interceptor-badge">INTERCEPTOR ACTUO</span>
+          <strong class="error-title">⚠ Error detectado</strong>
+          <span class="error-main">SERVER ERROR (500)</span>
+          <span class="error-desc">Error detectado por el interceptor.</span>
+          <span class="error-desc">Accion: activar UI segura para evitar fallos visibles en la interfaz.</span>
+        </div>
+
+        <div class="fallback-ui" *ngIf="vm.resultState === 'server-error'">
+          <strong>Modo seguro activado</strong>
+          <span>El sistema detecto un error del servidor. El interceptor activo un modo seguro para evitar fallos en la interfaz.</span>
+        </div>
+
+        <div class="fallback-ui" *ngIf="vm.resultState === 'unauthorized'">
+          <strong>Sesion no autorizada</strong>
+          <span>La sesion fue limpiada tras el 401 y la interfaz quedo protegida sin exponer datos stale.</span>
+        </div>
+
+        <div class="fallback-ui" *ngIf="vm.resultState === 'forbidden'">
+          <strong>Acceso denegado</strong>
+          <span>La interfaz mantiene estabilidad y muestra el rechazo centralizado del ErrorInterceptor.</span>
+        </div>
+
+        <div class="fallback-ui" *ngIf="vm.resultState === 'blocked'">
+          <strong>Peticion bloqueada</strong>
+          <span>AuthInterceptor corto el flujo antes de `next.handle()`. No hubo llamada al backend.</span>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="card fade-in">
+    <h2 class="section-title">Execution Log</h2>
+    <p class="section-subtitle" [innerHTML]="formatRichText('Traza cronologica del flujo. HTTP en azul, AUTH en naranja, LOADER en verde y ERROR en rojo.')">
+    </p>
+
+    <div class="log-panel log-container">
+      <div *ngFor="let entry of vm.logEntries" class="log-entry" [ngClass]="entry.type">
+        <span [innerHTML]="formatLogEntry(entry.elapsedMs, entry.type, entry.message)"></span>
+      </div>
+      <div *ngIf="!vm.logEntries.length" class="log-entry">
+        <span [innerHTML]="formatLogEntry(0, 'http', 'Ejecuta una accion para iniciar la traza.')"></span>
+      </div>
+    </div>
   </article>
 </section>
-

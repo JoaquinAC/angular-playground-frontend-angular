@@ -1,72 +1,25 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { AppRole } from 'src/app/core/models/auth/auth.models';
-import { UserResponseDto } from 'src/app/core/models/users/users.models';
-import { NotificationService } from '../../data/services/notification.service';
+import {
+  InterceptorsLabViewState,
+  LabUserViewModel,
+} from '../../data/models/interceptors-lab.models';
 import { InterceptorTestService } from '../../data/services/interceptor-test.service';
-import { LoaderService } from '../../data/services/loader.service';
-
-type StepState = 'idle' | 'active' | 'done' | 'error';
-type StepId = 'request' | 'auth' | 'loader' | 'backend' | 'response';
-type LogType = 'http' | 'auth' | 'loader' | 'error' | 'finalize';
-
-interface PipelineStep {
-  id: StepId;
-  label: string;
-  detail: string;
-  state: StepState;
-}
-
-interface LogEntry {
-  type: LogType;
-  message: string;
-}
-
-interface TimelineItem {
-  key: string;
-  label: string;
-  active: boolean;
-}
-
+import { InterceptorsLabStateService } from '../../data/services/interceptors-lab-state.service';
+import { NotificationService } from '../../data/services/notification.service';
 
 @Component({
   selector: 'app-interceptors-section',
   templateUrl: './interceptors-section.component.html',
   styleUrls: ['./interceptors-section.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
-
 export class InterceptorsSectionComponent implements OnInit, OnDestroy {
-
-  token: string | null = null;
-  users: string[] = [];
-  loaderActive = false;
-  authActive = false;
-  errorActive = false;
-  lastStatus = 'Idle';
-  statusClass = 'status-badge inactive';
-  currentErrorFlow = 'Sin simulación activa';
-
-  readonly pipelineSteps: PipelineStep[] = [
-    { id: 'request', label: 'Request', detail: 'Inicio HTTP request', state: 'idle' },
-    { id: 'auth', label: 'AuthInterceptor', detail: 'Adjunta JWT automático', state: 'idle' },
-    { id: 'loader', label: 'LoaderInterceptor', detail: 'Gestiona loading global', state: 'idle' },
-    { id: 'backend', label: 'Backend', detail: 'Procesa endpoint simulado', state: 'idle' },
-    { id: 'response', label: 'Response', detail: 'Entrega resultado final', state: 'idle' },
-  ];
-
-  readonly timeline: TimelineItem[] = [
-    { key: 't0', label: 't0 start', active: false },
-    { key: 't1', label: 't1 auth', active: false },
-    { key: 't2', label: 't2 loader ON', active: false },
-    { key: 't3', label: 't3 response', active: false },
-    { key: 't4', label: 't4 finalize', active: false },
-  ];
-
-  readonly beforeRequest = `GET /api/users\nHeaders: {}`;
-  interceptedRequest = 'GET /api/users\nHeaders: {}';
-
-  logEntries: LogEntry[] = [];
+  vm: InterceptorsLabViewState;
+  users: LabUserViewModel[] = [];
+  deletingUserId: number | null = null;
 
   private readonly subscriptions = new Subscription();
 
@@ -74,16 +27,16 @@ export class InterceptorsSectionComponent implements OnInit, OnDestroy {
     private interceptorTestService: InterceptorTestService,
     private authService: AuthService,
     private notificationService: NotificationService,
-    private loaderService: LoaderService,
+    private labState: InterceptorsLabStateService,
   ) {
-    this.token = this.authService.getToken();
+    this.vm = this.labState.snapshot();
   }
 
   ngOnInit(): void {
-    this.refreshState();
+    this.refreshSessionState();
     this.subscriptions.add(
-      this.loaderService.loading$.subscribe((isLoading: boolean) => {
-        this.loaderActive = isLoading;
+      this.labState.state$().subscribe((state) => {
+        this.vm = state;
       }),
     );
   }
@@ -92,45 +45,123 @@ export class InterceptorsSectionComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  sendRequest(): void {
-    this.users = [];
-    this.startPipeline('GET /api/users');
+  get isAdmin(): boolean {
+    return this.authService.getRole() === 'admin';
+  }
 
+  get authStepState(): string {
+    return this.resolveStepState('auth');
+  }
+
+  get loaderStepState(): string {
+    return this.resolveStepState('loader');
+  }
+
+  get errorStepState(): string {
+    if (this.vm.resultState === 'blocked') {
+      return 'blocked';
+    }
+
+    if (
+      this.vm.errorActive ||
+      this.vm.resultState === 'server-error' ||
+      this.vm.resultState === 'forbidden' ||
+      this.vm.resultState === 'unauthorized'
+    ) {
+      return 'error';
+    }
+
+    if (this.vm.lastStatus === 'SUCCESS') {
+      return 'done';
+    }
+
+    return 'idle';
+  }
+
+  get showTransformInfo(): boolean {
+    return this.vm.currentFlow.includes('TransformInterceptor');
+  }
+
+  get transformHeadline(): string {
+    return 'TransformInterceptor activo';
+  }
+
+  get transformDescription(): string {
+    return 'La respuesta fue convertida a un modelo de vista con campos listos para renderizar en la interfaz.';
+  }
+
+  loadUsers(): void {
     this.subscriptions.add(
       this.interceptorTestService.getUsers().subscribe({
-        next: (response: UserResponseDto[]) => {
-          this.users = response.map((user: UserResponseDto) => user.username);
-          this.markResponseSuccess(response.length);
-          this.notificationService.success('Petición completada');
+        next: (response) => {
+          this.users = response;
+          this.labState.resetResultMessage(
+            response.length
+              ? `${response.length} usuarios cargados desde response transformada.`
+              : 'Respuesta valida, sin usuarios disponibles.',
+          );
         },
-        error: () => {
-          this.markResponseError(500, 'Response error capturado en ErrorInterceptor');
+        error: (error: { status?: number }) => {
+          if (error.status === 401) {
+            this.users = [];
+            this.refreshSessionState();
+          }
+        },
+      }),
+    );
+  }
+
+  deleteUser(user: LabUserViewModel): void {
+    if (!this.isAdmin) {
+      return;
+    }
+
+    this.deletingUserId = user.id;
+    this.subscriptions.add(
+      this.interceptorTestService.deleteUser(user.id).subscribe({
+        next: () => {
+          window.setTimeout(() => {
+            this.users = this.users.filter((item) => item.id !== user.id);
+            this.deletingUserId = null;
+            this.labState.markDeleteSuccess(user.username);
+            this.notificationService.success(`${user.username} eliminado`);
+          }, 280);
+        },
+        error: (error: { status?: number }) => {
+          this.deletingUserId = null;
+          if (error.status === 401) {
+            this.users = [];
+            this.refreshSessionState();
+          }
         },
       }),
     );
   }
 
   simulate401(): void {
-    this.runErrorSimulation(
-      401,
-      'Token inválido → logout + redirect login',
-      () => this.interceptorTestService.simulate401(),
+    this.subscriptions.add(
+      this.interceptorTestService.simulate401().subscribe({
+        error: () => {
+          this.users = [];
+          this.refreshSessionState();
+        },
+      }),
     );
   }
 
   simulate403(): void {
-    this.runErrorSimulation(
-      403,
-      'Sin permisos → acceso denegado en UI',
-      () => this.interceptorTestService.simulate403(),
+    this.subscriptions.add(
+      this.interceptorTestService.simulate403().subscribe({
+        error: () => undefined,
+      }),
     );
   }
-  
+
   simulate500(): void {
-    this.runErrorSimulation(
-      500,
-      'Error servidor → fallback UI + notificación global',
-      () => this.interceptorTestService.simulate500(),
+    this.subscriptions.add(
+      this.interceptorTestService.simulate500().subscribe({
+        error: () => undefined,
+      }),
     );
   }
 
@@ -143,11 +174,11 @@ export class InterceptorsSectionComponent implements OnInit, OnDestroy {
   }
 
   private switchRole(role: AppRole): void {
-     this.subscriptions.add(
+    this.subscriptions.add(
       this.authService.loginAsRole(role).subscribe({
         next: () => {
-          this.refreshState();
-          this.sendRequest();
+          this.refreshSessionState();
+          this.loadUsers();
         },
         error: (error: Error) => {
           this.notificationService.error(error.message);
@@ -156,138 +187,105 @@ export class InterceptorsSectionComponent implements OnInit, OnDestroy {
     );
   }
 
-  private refreshState(): void {
-    this.token = this.authService.getToken();
+  private refreshSessionState(): void {
+    this.labState.syncSession(this.authService.getToken(), this.authService.getRole());
   }
 
-  private startPipeline(endpoint: string): void {
-    this.logEntries = [];
-    this.errorActive = false;
-    this.authActive = false;
-    this.currentErrorFlow = 'Sin simulación activa';
-    this.lastStatus = 'RUNNING';
-    this.statusClass = 'status-badge running';
-    this.interceptedRequest = this.beforeRequest;
-
-    this.pipelineSteps.forEach((step: PipelineStep) => {
-      step.state = 'idle';
-    });
-
-    this.timeline.forEach((item: TimelineItem) => {
-      item.active = false;
-    });
-
-    this.activateStep('request', 't0');
-    this.pushLog('http', `→ GET ${endpoint}`);
-
-    window.setTimeout(() => {
-      this.authActive = true;
-      this.activateStep('auth', 't1');
-      this.interceptedRequest = `GET /api/users\nHeaders: { Authorization: Bearer ${this.truncateToken()} }`;
-      this.pushLog('auth', '→ Token attached by AuthInterceptor');
-    }, 260);
-
-    window.setTimeout(() => {
-      this.activateStep('loader', 't2');
-      this.pushLog('loader', `→ Loader ${this.loaderActive ? 'ON' : 'OFF'} (global state)`);
-    }, 520);
-
-    window.setTimeout(() => {
-      this.activateStep('backend');
-      this.pushLog('http', '→ Backend processing /api/users (delay 1000ms)');
-    }, 760);
-  }
-
-  private markResponseSuccess(records: number): void {
-    this.authActive = false;
-    this.errorActive = false;
-    this.activateStep('response', 't3');
-    this.pushLog('http', `← 200 OK (${records} users)`);
-
-    window.setTimeout(() => {
-      this.timelineStep('t4');
-      this.lastStatus = 'SUCCESS';
-      this.statusClass = 'status-badge';
-      this.pushLog('loader', '→ Loader OFF');
-      this.pushLog('finalize', '→ finalize() executed');
-    }, 220);
-  }
-
-  private markResponseError(statusCode: number, detail: string): void {
-    this.authActive = false;
-    this.errorActive = true;
-    this.activateStep('response', 't3', true);
-    this.pushLog('error', `← ${statusCode} ${detail}`);
-
-    window.setTimeout(() => {
-      this.timelineStep('t4');
-      this.lastStatus = 'ERROR';
-      this.statusClass = 'status-badge inactive';
-      this.pushLog('loader', '→ Loader OFF');
-      this.pushLog('finalize', '→ finalize() executed');
-    }, 220);
-  }
-
-  private runErrorSimulation(
-    statusCode: number,
-    flow: string,
-    requestFactory: () => ReturnType<InterceptorTestService['simulate401']>,
-  ): void {
-    this.users = [];
-    this.currentErrorFlow = `Response ${statusCode} → ErrorInterceptor → ${flow}`;
-    this.startPipeline(`/api/simulate/${statusCode}`);
-
-    this.subscriptions.add(
-      requestFactory().subscribe({
-        error: () => {
-          this.markResponseError(statusCode, flow);
-        },
-      }),
+  formatBlock(content: string, kind: 'request' | 'response' | 'error'): string {
+    const escaped = this.escapeHtml(content);
+    const withUrls = escaped.replace(/(https?:\/\/[^\s"<]+|\/api\/[^\s"<]*)/g, '<span class="json-url">$1</span>');
+    const withHeaders = withUrls.replace(
+      /\b(Authorization|Headers|Content-Type|Accept)\b/g,
+      '<span class="json-header">$1</span>',
     );
+    const withBraces = withHeaders.replace(/([{}[\]])/g, '<span class="json-brace">$1</span>');
+    const withNulls = withBraces.replace(/\b(null|undefined|true|false)\b/g, '<span class="json-null">$1</span>');
+    const withValues = withNulls.replace(
+      /\b(BLOCKED|ADMIN|GUEST|SUCCESS|ERROR|RUNNING|IDLE)\b/g,
+      '<span class="json-value">$1</span>',
+    );
+    const withLabels = withValues.replace(
+      /\b(Response|Request|Status|Body)\b/g,
+      '<span class="json-key">$1</span>',
+    );
+    const withKeys = withLabels.replace(
+      /"([^"]+)"(?=\s*:)/g,
+      '<span class="json-key">"$1"</span>',
+    );
+    const withStrings = withKeys.replace(
+      /:\s*"([^"]*)"/g,
+      ': <span class="json-string">"$1"</span>',
+    );
+    const withNumbers = withStrings.replace(
+      /:\s*(-?\d+(\.\d+)?)/g,
+      ': <span class="json-number">$1</span>',
+    );
+    const withVerbs = withNumbers.replace(
+      /\b(GET|POST|PUT|PATCH|DELETE)\b/g,
+      '<span class="json-url">$1</span>',
+    );
+
+    return `<code class="code-block__inner code-block__inner--${kind}">${withVerbs}</code>`;
   }
 
-  private activateStep(stepId: StepId, timelineKey?: string, isError = false): void {
-    let found = false;
+  formatRichText(content: string): string {
+    return this.escapeHtml(content)
+      .replace(/\b(AuthInterceptor|LoaderInterceptor|ErrorInterceptor|TransformInterceptor)\b/g, '<span class="text-accent">$1</span>')
+      .replace(/\b(HTTP|request|response|errores|error|rol|token|backend|pipeline|Response|Request|DELETE)\b/gi, '<span class="text-primary">$1</span>')
+      .replace(/\b(RxJS|ADMIN|401|403|500|activo|bloquea|transformado|transformada|modelo de vista)\b/gi, '<span class="text-accent">$1</span>');
+  }
 
-    this.pipelineSteps.forEach((step: PipelineStep) => {
-      if (!found && step.id === stepId) {
-        step.state = isError ? 'error' : 'active';
-        found = true;
-        return;
-      }
+  formatFlowBanner(content: string): string {
+    return this.escapeHtml(content)
+      .replace(/(TransformInterceptor activo)/g, '<span class="flow-title">$1</span>')
+      .replace(/(la respuesta fue convertida a un modelo de vista listo para la interfaz)/gi, '<span class="flow-desc">$1</span>')
+      .replace(/(AuthInterceptor|LoaderInterceptor|ErrorInterceptor)/g, '<span class="flow-title">$1</span>');
+  }
 
-      if (!found && step.state !== 'error') {
-        step.state = 'done';
-        return;
-      }
+  statusPillClass(state: string): string {
+    return `status-pill status-${state}`;
+  }
 
-      if (step.state !== 'error') {
-        step.state = 'idle';
-      }
-    });
-
-    if (timelineKey) {
-      this.timelineStep(timelineKey);
+  displayStateLabel(state: string): string {
+    if (state === 'active') {
+      return '● ACTIVO';
     }
-  }
 
-  private timelineStep(key: string): void {
-    this.timeline.forEach((item: TimelineItem) => {
-      if (item.key === key) {
-        item.active = true;
-      }
-    });
-  }
-
-  private pushLog(type: LogType, message: string): void {
-    this.logEntries = [...this.logEntries, { type, message }];
-  }
-
-  private truncateToken(): string {
-    if (!this.token) {
-      return 'N/A';
+    if (state === 'done') {
+      return '✔ COMPLETADO';
     }
 
-    return `${this.token.slice(0, 12)}...`;
+    if (state === 'error') {
+      return '✖ ERROR';
+    }
+
+    if (state === 'blocked') {
+      return '■ BLOQUEADO';
+    }
+
+    return 'IDLE';
+  }
+
+  formatLogEntry(elapsedMs: number, type: string, message: string): string {
+    return `
+      <span class="log-time">[${elapsedMs}ms]</span>
+      <span class="log-${type}">${type.toUpperCase()}</span>
+      <span class="log-text">${this.escapeHtml(message)}</span>
+    `;
+  }
+
+  isDeleting(userId: number): boolean {
+    return this.deletingUserId === userId;
+  }
+
+  private resolveStepState(stepId: string): string {
+    return this.vm.pipelineSteps.find((step) => step.id === stepId)?.state || 'idle';
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 }

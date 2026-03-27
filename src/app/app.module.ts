@@ -13,6 +13,7 @@ import { CacheInterceptor } from '../app/features/interceptors-lab/interceptors/
 import { LoaderInterceptor } from '../app/features/interceptors-lab/interceptors/loader.interceptor';
 import { ErrorInterceptor } from '../app/features/interceptors-lab/interceptors/error.interceptor';
 import { NotificationToastComponent } from './shared/components/notification-toast/notification-toast.component';
+import { TransformInterceptor } from './features/interceptors-lab/interceptors/transform.interceptor';
 
 
 @NgModule({
@@ -29,6 +30,7 @@ import { NotificationToastComponent } from './shared/components/notification-toa
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: CacheInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: TransformInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
   ],
   bootstrap: [AppComponent],

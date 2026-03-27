@@ -8,12 +8,19 @@ import {
 } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { INTERCEPTORS_LAB_CONTEXT } from '../data/interceptors/interceptors-lab-context';
 
 @Injectable()
 export class CacheInterceptor implements HttpInterceptor {
   private cache = new Map<string, HttpResponse<unknown>>();
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    const context = request.context.get(INTERCEPTORS_LAB_CONTEXT);
+
+    if (context.enabled) {
+      return next.handle(request);
+    }
+
     if (request.method !== 'GET') {
       if (request.method === 'POST' || request.method === 'DELETE') {
         this.invalidateAuthCache();
