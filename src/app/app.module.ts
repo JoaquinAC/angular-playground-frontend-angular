@@ -13,11 +13,13 @@ import { CacheInterceptor } from '../app/features/interceptors-lab/interceptors/
 import { LoaderInterceptor } from '../app/features/interceptors-lab/interceptors/loader.interceptor';
 import { ErrorInterceptor } from '../app/features/interceptors-lab/interceptors/error.interceptor';
 import { NotificationToastComponent } from './shared/components/notification-toast/notification-toast.component';
+import { NotificationCenterComponent } from './shared/components/notification-center/notification-center.component';
 import { TransformInterceptor } from './features/interceptors-lab/interceptors/transform.interceptor';
+import { GuardResultCardModule } from './shared/components/guard-result-card/guard-result-card.module';
 
 
 @NgModule({
-  declarations: [AppComponent, LoaderComponent, UnauthorizedComponent,NotificationToastComponent],
+  declarations: [AppComponent, LoaderComponent, UnauthorizedComponent, NotificationToastComponent, NotificationCenterComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -25,6 +27,7 @@ import { TransformInterceptor } from './features/interceptors-lab/interceptors/t
     RouterModule,
     HttpClientModule,
     MatSnackBarModule,
+    GuardResultCardModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

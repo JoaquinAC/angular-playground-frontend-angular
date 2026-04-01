@@ -13,15 +13,18 @@
 
   .mat-dialog-container {
     position: relative;
-    background: rgba(28, 28, 28, 0.92);
+    background: linear-gradient(145deg, rgba(12, 12, 12, 0.95), rgba(25, 25, 25, 0.94));
     border-radius: 16px;
     padding: 2rem 2.5rem;
     color: #e0e0e0;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.75);
+    border: 1px solid rgba(255, 140, 0, 0.2);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.72), inset 0 0 2px rgba(255, 255, 255, 0.06);
     animation: zoomIn 0.3s ease;
     overflow: visible;
+    font-family: 'Inter', 'Roboto', sans-serif;
+    color: #ece7de;
   }
 }
 
@@ -29,8 +32,8 @@
 .modal-title {
   text-align: center;
   font-size: 1.4rem;
-  font-weight: 600;
-  color: #ff7b22;
+  font-weight: 700;
+  color: #ff9b3d;
   margin-bottom: 1.5rem;
 }
 
@@ -111,14 +114,14 @@
   }
 
   &.primary {
-    background: #ff7b22;
+    background: #ff8c00;
     border: none;
     color: #fff;
-    box-shadow: 0 4px 12px rgba(255, 123, 34, 0.35);
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
 
     &:hover {
-      background: #ff8c3a;
-      box-shadow: 0 0 18px rgba(255, 123, 34, 0.45);
+      background: rgba(255, 140, 0, 0.9);
+      box-shadow: 0 6px 18px rgba(255, 140, 0, 0.38);
     }
   }
 }

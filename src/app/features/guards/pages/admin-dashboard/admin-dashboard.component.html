@@ -1,1 +1,12 @@
-<p>admin-dashboard works!</p>
+<app-guard-result-card
+  [icon]="'🛡️'"
+  [title]="vm.title"
+  [message]="vm.message"
+  [detail]="vm.detail"
+  [status]="vm.status"
+  [requiredRole]="vm.requiredRole"
+  [currentRole]="vm.currentRole"
+  [targetRoute]="vm.targetRoute"
+  [primaryAction]="{ label: 'Volver al Home', link: '/' }"
+  [secondaryAction]="{ label: 'Ir a Guards', link: '/guards' }">
+</app-guard-result-card>

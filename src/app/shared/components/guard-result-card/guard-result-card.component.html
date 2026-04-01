@@ -1,0 +1,33 @@
+<section class="guard-result" [attr.data-status]="status">
+  <article class="guard-result__card">
+    <div class="guard-result__icon">{{ icon }}</div>
+    <span class="guard-result__pill">{{ status === 'error' ? 'Guard bloqueado' : status === 'success' ? 'Guard permitido' : 'Acceso limitado' }}</span>
+    <h1 class="guard-result__title">{{ title }}</h1>
+    <p class="guard-result__message">{{ message }}</p>
+    <p class="guard-result__detail">{{ detail }}</p>
+
+    <div class="guard-result__details">
+      <div class="guard-result__row">
+        <span class="guard-result__label">Guard</span>
+        <strong class="guard-result__value">RoleGuard</strong>
+      </div>
+      <div class="guard-result__row">
+        <span class="guard-result__label">Rol requerido</span>
+        <strong class="guard-result__value guard-result__value--accent">{{ requiredRole }}</strong>
+      </div>
+      <div class="guard-result__row">
+        <span class="guard-result__label">Rol actual</span>
+        <strong class="guard-result__value" [ngClass]="roleTone">{{ currentRole }}</strong>
+      </div>
+      <div class="guard-result__row">
+        <span class="guard-result__label">Ruta evaluada</span>
+        <strong class="guard-result__value guard-result__value--neutral">{{ targetRoute }}</strong>
+      </div>
+    </div>
+
+    <div class="guard-result__actions">
+      <a class="guard-result__btn guard-result__btn--primary" [routerLink]="primaryAction.link">{{ primaryAction.label }}</a>
+      <a class="guard-result__btn guard-result__btn--ghost" [routerLink]="secondaryAction.link">{{ secondaryAction.label }}</a>
+    </div>
+  </article>
+</section>

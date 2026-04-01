@@ -1,84 +1,92 @@
-<section class="observables-dashboard" @fadeSlideIn>
-  <header class="observables-dashboard__header">
-    <span class="eyebrow">Observables que se entienden sin pelear con el código</span>
-    <h1 class="observables-dashboard__title">🔬 Observables Lab</h1>
-    <p class="observables-dashboard__subtitle">
-      Esta vista te muestra qué estás viendo, qué problema resuelve cada patrón y qué cambia en
-      pantalla cuando el flujo reacciona.
-    </p>
+<section class="observables-dashboard background-soft" @fadeSlideIn>
+  <header class="observables-dashboard__header fade-in">
+    <div>
+      <p class="eyebrow">RxJS Observables & Subjects</p>
+      <h1 class="observables-dashboard__title">Observables Lab</h1>
+      <p class="observables-dashboard__subtitle">
+        Patrones de observables con BehaviorSubject, ReplaySubject y operadores RxJS. Visualiza el flujo reactivo en tiempo real.
+      </p>
+    </div>
+    <span class="status-pill status-active">EN VIVO</span>
   </header>
 
-  <!-- BehaviorSubject -->
-  <article class="card card--status">
-    <div class="card__intro">
-      <span class="card__kicker">BehaviorSubject</span>
-      <h2 class="card__title">🧠 Valor compartido que siempre tiene una respuesta lista</h2>
-      <p class="card__description">
-        <strong>Qué problema resuelve:</strong> cuando un componente llega tarde, no debería
-        quedarse “a ciegas”.
-      </p>
-      <p class="card__context">
-        <strong>Qué está pasando:</strong> este estado guarda el valor actual y se lo entrega al
-        instante a cualquier nuevo suscriptor.
-      </p>
-    </div>
-
-    <div class="status-grid">
-      <div class="status-item status-item--highlight" [class.is-pulse]="latestUserPulse">
-        <span class="status-label">Ahora mismo</span>
-        <span class="status-value">{{ latestUserLabel }}</span>
-        <small class="status-meta">{{ lastChangeAt }}</small>
-        <p class="status-copy">{{ latestUserNarrative }}</p>
-      </div>
-
-      <div class="status-item">
-        <span class="status-label">Operador / fuente</span>
-        <span class="badge badge--admin">BehaviorSubject</span>
-        <p class="status-copy">Mantiene el último valor vivo para toda la interfaz.</p>
-      </div>
-
-      <div class="status-item">
-        <span class="status-label">Resultado visible</span>
-        <span class="status-value status-value--mono">{{ user$ | async | json }}</span>
-        <p class="status-copy">Este snapshot es lo que la UI puede renderizar en este instante.</p>
-      </div>
-    </div>
-
-      <div class="checks-list checks-list--context">
-      <div class="check-item" [class.active]="replayChecks.liveUpdates">
-        la actualización se propaga al instante a toda la vista
-      </div>
-      <div class="check-item active">
-        un suscriptor nuevo recibe el último valor sin esperar otra emisión
-      </div>
-      <div class="check-item" [class.active]="replayChecks.controlledReset">
-        el estado puede reiniciarse sin recargar la pantalla 
+  <!-- Subject Playground -->
+  <article class="card fade-in">
+    <div class="card-head">
+      <div>
+        <h2 class="section-title">🚀 Observables Play (Behavior / Replay)</h2>
+        <p class="section-subtitle">Emite valores, crea suscriptores dinámicos y observa diferencias en vivo.</p>
       </div>
     </div>
 
     <div class="actions-row">
-      <button class="btn ghost" (click)="updateUser()">Actualizar usuario compartido</button>
-      <button class="btn primary" (click)="resetUser()">Volver al valor inicial</button>
+      <input class="input" type="text" placeholder="Escribe un valor" [(ngModel)]="newValue" />
+      <button class="btn primary" (click)="emitValue()">Emitir</button>
+    </div>
+
+    <div class="status-grid">
+      <div class="status-item status-item--highlight">
+        <span class="status-label">Comportamiento Behavior</span>
+        <span class="status-value">{{ sharedValue$ | async }}</span>
+      </div>
+
+      <div class="status-item">
+        <span class="status-label">Buffer Replay (últimos 5)</span>
+        <div class="status-value status-value--mono">
+          <ng-container *ngFor="let item of sharedReplay$ | async; let last = last">
+            <span [class.text-primary]="last">{{ item }}</span><span *ngIf="!last"> → </span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-row actions-row--compact">
+      <button class="btn ghost" (click)="createSubscriber('behavior')">Nuevo Behavior</button>
+      <button class="btn ghost" (click)="createSubscriber('replay')">Nuevo Replay</button>
+    </div>
+
+    <div class="subscriber-container">
+      <article class="card card-small" *ngFor="let sub of subscribers">
+        <div class="card-head">
+          <div>
+            <p class="kicker">Suscriptor #{{ sub.id }} ({{ sub.type | uppercase }})</p>
+          </div>
+          <div class="actions-row actions-row--compact">
+            <button class="btn ghost" (click)="toggleSubscriber(sub)">
+              {{ sub.active ? 'Desuscribir' : 'Suscribir' }}
+            </button>
+            <button class="btn ghost" (click)="removeSubscriber(sub)">Eliminar</button>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <span class="status-label">Valores recibidos</span>
+          <div class="status-value status-value--mono">
+            <span *ngIf="!sub.values.length">(vacío)</span>
+            <ng-container *ngIf="sub.values.length">
+              {{ sub.values.join(' | ') }}
+            </ng-container>
+          </div>
+        </div>
+      </article>
     </div>
   </article>
 
   <!-- ReplaySubject -->
-  <article class="card">
-    <div class="card__intro">
-      <span class="card__kicker card__kicker--blue">ReplaySubject</span>
-      <h2 class="card__title">📚 Historial retenido para quien llega después</h2>
-      <p class="card__description">
-        <strong>Qué problema resuelve:</strong> un nuevo suscriptor puede necesitar contexto
-        reciente, no solo el último dato.
-      </p>
-      <p class="card__context">
-        <strong>Qué está pasando:</strong> el buffer conserva un pequeño historial y lo actualiza
-        cada vez que entra una nueva emisión.
-      </p>
+  <article class="card fade-in">
+    <div class="card-head">
+      <div>
+        <h2 class="section-title">ReplaySubject</h2>
+        <p class="section-subtitle">Historial retenido para quien llega después. Un nuevo suscriptor puede recuperar contexto reciente, no solo el último dato.</p>
+      </div>
+
+      <div class="actions-row actions-row--compact">
+        <button class="btn primary" (click)="addUser()">Agregar usuario</button>
+      </div>
     </div>
 
     <div class="replay-summary" [class.is-pulse]="replayPulse">
-      <span class="badge badge--admin badge--blue">Buffer {{ replayBufferLabel }}</span>
+      <span class="history-pill">Buffer {{ replayBufferLabel }}</span>
       <div>
         <div class="replay-note replay-note--strong">{{ replayLatestAction }}</div>
         <div class="replay-note">{{ replayNarrative }}</div>
@@ -87,7 +95,7 @@
 
     <ul class="history-list">
       <li *ngFor="let user of usersHistory$ | async; let isLast = last" [class.is-latest]="isLast">
-        <span class="history-pill">{{ isLast ? 'Nuevo' : 'Historial' }}</span>
+        <span class="history-pill">{{ isLast ? 'NUEVO' : 'HISTORIAL' }}</span>
         <div>
           <strong>{{ user.nombre }}</strong>
           <small>{{ user.timestamp }}</small>
@@ -95,44 +103,35 @@
       </li>
     </ul>
 
-    <div class="checks-list checks-list--context">
+    <div class="checks-list">
       <div class="check-item" [class.active]="replayChecks.keepsLatest">
-        mantiene los valores más recientes aunque el flujo siga avanzando
+        ✔ Mantiene valores más recientes
       </div>
       <div class="check-item" [class.active]="replayChecks.lateSubscription">
-        una suscripción tardía puede recuperar contexto reciente
+        ✔ Suscripción tardía recupera contexto
       </div>
       <div class="check-item" [class.active]="replayChecks.liveUpdates">
-        cada nuevo evento actualiza el historial visible en tiempo real
+        ✔ Historial se actualiza en tiempo real
       </div>
-    </div>
-
-    <div class="actions-row">
-      <button class="btn ghost" (click)="addUser()">Agregar usuario al historial</button>
     </div>
   </article>
 
   <!-- Modal trigger -->
-  <article class="card card--bridge">
-    <div class="card__intro">
-      <span class="card__kicker card__kicker--cyan">Siguiente paso</span>
-      <h2 class="card__title">🧪 RxJS Playground con flujo, bitácora y contexto humano</h2>
-      <p class="card__description">
-        Aquí viste la idea base. En el modal vas a ver el flujo en movimiento, por qué importa cada
-        operador y qué resultado deja en la interfaz.
-      </p>
+  <article class="card fade-in">
+    <div class="card-head">
+      <div>
+        <h2 class="section-title">RxJS Playground Avanzado</h2>
+        <p class="section-subtitle">Explora operadores como switchMap, mergeMap, combineLatest y patrones avanzados de flujo reactivo en tiempo real.</p>
+      </div>
     </div>
 
-   <div class="bridge-flow">
-      <span>Qué problema resuelve</span>
-      <span>→</span>
-      <span>Qué está pasando</span>
-      <span>→</span>
-      <span>Qué resultado ves</span>
+    <div class="flow-banner">
+      <span class="flow-title">Observables Avanzados:</span>
+      <span class="flow-desc"> Qué problema resuelve → Qué está pasando → Qué resultado ves.</span>
     </div>
 
     <button class="btn primary" (click)="openFlowModal()">
-      Abrir modal de flujo en tiempo real
+      Abrir playground en tiempo real
     </button>
   </article>
 </section>

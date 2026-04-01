@@ -1,4 +1,12 @@
-<section class="unauthorized-view">
-  <h1>Acceso no autorizado</h1>
-  <p>No tienes permisos para acceder a esta ruta.</p>
-</section>
+<app-guard-result-card
+  [icon]="'🔒'"
+  [title]="vm.title"
+  [message]="vm.message"
+  [detail]="vm.detail"
+  [status]="vm.status"
+  [requiredRole]="vm.requiredRole"
+  [currentRole]="vm.currentRole"
+  [targetRoute]="vm.targetRoute"
+  [primaryAction]="{ label: 'Volver al Home', link: '/' }"
+  [secondaryAction]="{ label: 'Ir a Guards', link: '/guards' }">
+</app-guard-result-card>

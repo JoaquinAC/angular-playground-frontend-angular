@@ -91,6 +91,12 @@ export class InterceptorsSectionComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
+    if (!this.isAdmin) {
+      this.users = [];
+      this.labState.markRequestBlocked('Acceso denegado: GUEST no puede consultar /api/users. Cambia a ADMIN para obtener datos.');
+      return;
+    }
+
     this.subscriptions.add(
       this.interceptorTestService.getUsers().subscribe({
         next: (response) => {
@@ -178,7 +184,14 @@ export class InterceptorsSectionComponent implements OnInit, OnDestroy {
       this.authService.loginAsRole(role).subscribe({
         next: () => {
           this.refreshSessionState();
-          this.loadUsers();
+
+          if (role === 'admin') {
+            this.loadUsers();
+          } else {
+            this.users = [];
+            this.labState.markRequestBlocked('Modo GUEST activo: /api/users bloqueado hasta obtener token ADMIN.');
+            this.labState.resetResultMessage('Modo GUEST activo. Los datos previos fueron descartados.');
+          }
         },
         error: (error: Error) => {
           this.notificationService.error(error.message);

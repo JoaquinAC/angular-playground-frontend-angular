@@ -46,6 +46,8 @@ export class ErrorInterceptor implements HttpInterceptor {
   }
 
   private handleByStatus(error: NormalizedHttpError): void {
+    const currentRole = this.authService.getRole();
+
     if (error.status === 401) {
       this.authService.clearSession();
       this.notificationService.error(`401 (${error.code}): ${error.message}`);
@@ -53,7 +55,8 @@ export class ErrorInterceptor implements HttpInterceptor {
     }
 
     if (error.status === 403) {
-      this.notificationService.error(`403 (${error.code}): ${error.message}`);
+      const roleMessage = currentRole && currentRole !== 'admin' ? ` El rol ${currentRole.toUpperCase()} no tiene permisos para esta operación.` : '';
+      this.notificationService.error(`403 (${error.code}): ${error.message}${roleMessage}`);
       return;
     }
 
@@ -69,7 +72,8 @@ export class ErrorInterceptor implements HttpInterceptor {
     }
 
     if (error.status >= 500) {
-      this.notificationService.error(`500 (${error.code}): ${error.message}`);
+      const roleMessage = currentRole && currentRole !== 'admin' ? ` El rol ${currentRole.toUpperCase()} no está habilitado para hacer esta consulta.` : '';
+      this.notificationService.error(`${error.status} (${error.code}): ${error.message}${roleMessage}`);
     }
   }
 

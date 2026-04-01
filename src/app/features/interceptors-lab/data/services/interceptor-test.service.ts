@@ -17,7 +17,8 @@ export class InterceptorTestService {
 
   getUsers(): Observable<LabUserViewModel[]> {
     return this.http.get<LabUserViewModel[]>(`${this.apiUrl}/users`, {
-      context: this.createContext('GET_USERS', 'GET /api/users', false, true),
+      // GET users es una operacion admin-only en este lab
+      context: this.createContext('GET_USERS', 'GET /api/users', true, true),
     });
   }
 

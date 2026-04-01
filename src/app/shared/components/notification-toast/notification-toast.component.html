@@ -1,9 +1,22 @@
-<div class="toast-card" [class.toast-card--error]="data.type === 'error'">
+<div
+  [class]="toastClass"
+  (mouseenter)="pauseAutoDismiss()"
+  (mouseleave)="resumeAutoDismiss()"
+>
   <div class="toast-card__head">
-    <span class="toast-card__icon">{{ icon }}</span>
+    <span class="toast-card__icon" aria-hidden="true">{{ icon }}</span>
     <strong class="toast-card__title">{{ title }}</strong>
-    <button class="toast-card__close" type="button" (click)="close()">×</button>
+    <button class="toast-card__close" type="button" (click)="close()" aria-label="Cerrar notificación">×</button>
   </div>
 
-  <p class="toast-card__message">{{ data.message }}</p>
+  <div class="toast-card__content">
+    <p class="toast-card__message" [innerHTML]="mainHtml"></p>
+
+    <ng-container *ngIf="hasDetail">
+      <button class="toast-card__toggle" type="button" (click)="showDetail = !showDetail">
+        {{ showDetail ? 'Ocultar detalle técnico' : 'Ver detalle técnico' }}
+      </button>
+      <pre class="toast-card__detail" *ngIf="showDetail" [innerHTML]="detailHtml"></pre>
+    </ng-container>
+  </div>
 </div>

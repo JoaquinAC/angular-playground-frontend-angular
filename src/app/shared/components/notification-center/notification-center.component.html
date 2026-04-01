@@ -1,0 +1,8 @@
+<div class="notification-center" aria-live="polite" aria-atomic="true">
+  <app-notification-toast
+    *ngFor="let toast of toasts"
+    [data]="toast"
+    (closeEvent)="removeToast($event)"
+    class="notification-toast-item"
+  ></app-notification-toast>
+</div>

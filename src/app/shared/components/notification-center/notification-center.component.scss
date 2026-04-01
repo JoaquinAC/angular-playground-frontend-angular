@@ -1,0 +1,16 @@
+.notification-center {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: min(92vw, 420px);
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.notification-toast-item {
+  pointer-events: auto;
+}

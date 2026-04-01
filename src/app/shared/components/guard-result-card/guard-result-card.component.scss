@@ -1,0 +1,210 @@
+:host {
+  display: block;
+}
+
+.guard-result {
+  min-height: calc(100vh - 64px);
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at left center, rgba(255, 140, 0, 0.08), transparent 22%),
+    radial-gradient(circle at right center, rgba(255, 140, 0, 0.08), transparent 22%),
+    linear-gradient(180deg, #0b0d10 0%, #111418 55%, #15191f 100%);
+  font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+}
+
+.guard-result__card {
+  width: min(100%, 760px);
+  padding: 2rem 2.2rem;
+  border-radius: 24px;
+  background: rgba(15, 17, 20, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(10px);
+  text-align: center;
+  animation: guardResultEnter 220ms ease forwards;
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.guard-result__card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255, 140, 0, 0.35);
+  box-shadow: 0 28px 52px rgba(0, 0, 0, 0.44), 0 0 0 1px rgba(255, 140, 0, 0.1);
+}
+
+.guard-result[data-status='error'] .guard-result__card {
+  border-color: rgba(255, 77, 79, 0.28);
+}
+
+.guard-result[data-status='success'] .guard-result__card {
+  border-color: rgba(0, 255, 149, 0.22);
+}
+
+.guard-result[data-status='info'] .guard-result__card {
+  border-color: rgba(130, 213, 255, 0.22);
+}
+
+.guard-result__icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.guard-result__pill {
+  display: inline-flex;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.guard-result[data-status='error'] .guard-result__pill {
+  background: rgba(255, 77, 79, 0.12);
+  color: #ff8d8d;
+}
+
+.guard-result[data-status='success'] .guard-result__pill {
+  background: rgba(0, 255, 149, 0.12);
+  color: #8ef0c1;
+}
+
+.guard-result[data-status='info'] .guard-result__pill {
+  background: rgba(130, 213, 255, 0.12);
+  color: #9fdcff;
+}
+
+.guard-result__title {
+  margin: 0 0 0.7rem;
+  color: #f5ede3;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 800;
+}
+
+.guard-result__message {
+  margin: 0 0 0.55rem;
+  color: #ece3d7;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.guard-result__detail {
+  margin: 0 0 1.35rem;
+  color: #a9b0b8;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.guard-result__details {
+  display: grid;
+  gap: 0.75rem;
+  text-align: left;
+  margin-bottom: 1.4rem;
+}
+
+.guard-result__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.guard-result__row:hover {
+  background: rgba(255, 140, 0, 0.12);
+  border-color: rgba(255, 140, 0, 0.45);
+  transform: translateY(-1px);
+}
+
+.guard-result__label {
+  color: #9ea6af;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.guard-result__value {
+  font-family: Consolas, monospace;
+  color: #efe5d8;
+  text-align: right;
+}
+
+.guard-result__value--accent {
+  color: #ffbf7c;
+}
+
+.guard-result__value--muted {
+  color: #b8b0a5;
+}
+
+.guard-result__value--neutral {
+  color: #9fdcff;
+}
+
+.guard-result__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.guard-result__btn {
+  text-decoration: none;
+  padding: 0.78rem 1.2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.guard-result__btn:hover {
+  transform: translateY(-2px);
+}
+
+.guard-result__btn--primary {
+  background: linear-gradient(135deg, #ff8c00, #ff6a00);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.28);
+}
+
+.guard-result__btn--ghost {
+  background: rgba(35, 36, 40, 0.95);
+  color: #ece3d7;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes guardResultEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .guard-result {
+    padding: 1.2rem;
+  }
+
+  .guard-result__card {
+    padding: 1.4rem;
+  }
+
+  .guard-result__row,
+  .guard-result__actions {
+    flex-direction: column;
+  }
+
+  .guard-result__value {
+    text-align: left;
+  }
+}

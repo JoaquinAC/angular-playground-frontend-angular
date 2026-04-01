@@ -1,104 +1,102 @@
-<!-- Guards Test Dashboard -->
-<section class="guards-dashboard" @fadeSlideIn>
-  <header class="guards-dashboard__header">
-    <h1 class="guards-dashboard__title">🛡️ Guards Test Dashboard</h1>
-    <p class="guards-dashboard__subtitle">
-      Vista técnica para validación de roles, tokens y comportamiento de Guards.
-    </p>
+<section class="guards-dashboard background-soft" @fadeSlideIn>
+  <header class="guards-dashboard__header fade-in">
+    <div>
+      <p class="eyebrow">Angular Role-Based Security</p>
+      <h1 class="guards-dashboard__title">Guards Lab</h1>
+      <p class="guards-dashboard__subtitle">
+        Validación de roles, tokens y comportamiento de Guards con protección de rutas basada en autorización.
+      </p>
+    </div>
+    <span class="status-pill status-ok">{{ hasToken ? 'AUTHORIZED' : 'UNAUTHORIZED' }}</span>
   </header>
 
-  <!-- Estado actual -->
-  <article class="card card--status">
-    <h2 class="card__title">Estado actual</h2>
+  <article class="card fade-in">
+    <div class="card-head">
+      <div>
+        <h2 class="section-title">Guard Environment</h2>
+        <p class="section-subtitle">El dashboard valida autenticación y rol antes de permitir acceso a rutas protegidas.</p>
+      </div>
+
+      <div class="actions-row actions-row--compact">
+        <button class="btn ghost" (click)="setGuestToken()">Set Guest</button>
+        <button class="btn primary" (click)="setAdminToken()">Set Admin</button>
+        <button class="btn warning" (click)="clearToken()">Clear Token</button>
+      </div>
+    </div>
 
     <div class="status-grid">
       <div class="status-item">
-        <span class="status-label">Token actual</span>
-        <span class="status-value status-value--mono" [title]="token || ''">
-          {{ tokenPreview }}
-        </span>
+        <span class="status-label">Token activo</span>
+        <span class="token-chip">{{ tokenPreview }}</span>
       </div>
 
       <div class="status-item">
-        <span class="status-label">Rol actual</span>
-        <span
-          class="badge"
-          [ngClass]="{
-            'badge--guest-danger': role === 'guest',
-            'badge--admin-success': role === 'admin'
-          }"
-        >
-          {{ roleLabel }}
-        </span>
+        <span class="status-label">Rol activo</span>
+        <span class="role-badge" [class.admin]="role === 'admin'" [class.guest]="role === 'guest'">{{ roleLabel }}</span>
       </div>
 
       <div class="status-item">
-        <span class="status-label">Estado</span>
-        <span class="status-value status-pill" [ngClass]="{ 'status-pill--ok': hasToken, 'status-pill--warn': !hasToken }">
-          {{ hasToken ? 'Token ' + roleLabel + ' asignado en LocalStorage' : 'No existe token en LocalStorage' }}
+        <span class="status-label">Status</span>
+        <span class="status-pill" [ngClass]="{ 'status-ok': hasToken, 'status-warn': !hasToken }">
+          {{ hasToken ? 'Token ' + roleLabel + ' en LocalStorage' : 'Sin token en LocalStorage' }}
         </span>
       </div>
     </div>
   </article>
 
-  <!-- Acciones -->
-  <article class="card card--actions">
-    <h2 class="card__title">Acciones rápidas</h2>
+  <article class="card fade-in">
+    <h2 class="section-title">Guard Validation Flow</h2>
+    <p class="section-subtitle">El guard valida autenticación y rol antes de cargar la ruta protegida. Cada paso del flujo se ejecuta secuencialmente.</p>
 
-    <div class="actions-row">
-      <button class="btn ghost" (click)="setGuestToken()">Set Token Invitado</button>
-      <button class="btn primary" (click)="setAdminToken()">Set Token Admin</button>
-      <button class="btn warning" (click)="clearToken()">Limpiar token</button>
+    <div class="pipeline-row">
+      <div class="pipeline-step">
+        <strong class="pipeline-title">1. Click Button</strong>
+        <span class="pipeline-desc">Usuario intenta navegar a ruta protegida</span>
+        <small class="pipeline-state text-secondary">inicio</small>
+      </div>
+
+      <div class="pipeline-line"></div>
+
+      <div class="pipeline-step">
+        <strong class="pipeline-title">2. Router</strong>
+        <span class="pipeline-desc">Angular Router intercepta navegación</span>
+        <small class="pipeline-state text-secondary">routing</small>
+      </div>
+
+      <div class="pipeline-line"></div>
+
+      <div class="pipeline-step active">
+        <strong class="pipeline-title">3. RoleGuard</strong>
+        <span class="pipeline-desc">Guard valida token y rol</span>
+        <small class="pipeline-state text-accent">validando</small>
+      </div>
+
+      <div class="pipeline-line"></div>
+
+      <div class="pipeline-step">
+        <strong class="pipeline-title">4. Auth Service</strong>
+        <span class="pipeline-desc">Consulta token en LocalStorage</span>
+        <small class="pipeline-state text-secondary">validando</small>
+      </div>
+
+      <div class="pipeline-line"></div>
+
+      <div class="pipeline-step">
+        <strong class="pipeline-title">5. Acción Final</strong>
+        <span class="pipeline-desc">Acceso autorizado o redirect</span>
+        <small class="pipeline-state text-secondary">resultado</small>
+      </div>
+    </div>
+
+    <div class="flow-banner">
+      <span class="flow-title">Flujo de autorización:</span>
+      <span class="flow-desc"> Si token existe y rol coincide → acceso permitido. Si token no existe → redirige a /auth/login. Si rol no coincide → redirige a /unauthorized.</span>
     </div>
   </article>
 
-  <!-- Diagrama de flujo (visual) -->
-  <article class="card card--flow" aria-label="Flujo de validación de acceso">
-    <h2 class="card__title">Flujo de validación (UI explicativa)</h2>
-    <p class="card__description">
-      El guard valida autenticación y rol antes de cargar la ruta protegida.
-    </p>
-
-    <div class="flow-track" role="list" aria-label="Pasos del flujo de autorización">
-      <div class="flow-step" role="listitem">
-        <span class="flow-step__index">1</span>
-        <span class="flow-step__label">Click botón</span>
-      </div>
-
-      <span class="flow-arrow" aria-hidden="true">→</span>
-
-      <div class="flow-step" role="listitem">
-        <span class="flow-step__index">2</span>
-        <span class="flow-step__label">Router</span>
-      </div>
-
-      <span class="flow-arrow" aria-hidden="true">→</span>
-
-      <div class="flow-step flow-step--highlight" role="listitem">
-        <span class="flow-step__index">3</span>
-        <span class="flow-step__label">RoleGuard</span>
-      </div>
-
-      <span class="flow-arrow" aria-hidden="true">→</span>
-
-      <div class="flow-step" role="listitem">
-        <span class="flow-step__index">4</span>
-        <span class="flow-step__label">LocalStorage/AuthService</span>
-      </div>
-
-      <span class="flow-arrow" aria-hidden="true">→</span>
-
-      <div class="flow-step flow-step--result" role="listitem">
-        <span class="flow-step__index">5</span>
-        <span class="flow-step__label">Acceso o Redirect</span>
-      </div>
-    </div>
-  </article>
-
-  <!-- Rutas -->
   <section class="routes-grid">
     <!-- Guest Route -->
-    <article class="card card--route card--route-guest">
+    <article class="card fade-in">
       <h3 class="card__title">Ruta Invitado</h3>
 
       <p class="card__description">
@@ -116,7 +114,7 @@
     </article>
 
     <!-- Admin Route -->
-    <article class="card card--route card--route-admi">
+    <article class="card fade-in">
       <h3 class="card__title">Ruta Admin</h3>
 
       <p class="card__description">
@@ -129,6 +127,7 @@
         <li class="rule rule--block">✖ Si no hay token: redirige a <strong>/auth/login</strong>.</li>
         <li class="rule rule--block">✖ Si el rol no coincide: redirige a <strong>/unauthorized</strong>.</li>
       </ul>
+
       <button class="btn primary" (click)="goToAdmin()">Ir a Admin Route</button>
     </article>
   </section>

@@ -10,7 +10,8 @@
   align-items: center;
   justify-content: center;
   min-height: 100%;
-  background: transparent;
+  background: radial-gradient(circle at top right, rgba(255, 140, 0, 0.08), transparent 42%),
+    linear-gradient(145deg, rgba(12, 12, 12, 0.95), rgba(3, 3, 3, 0.96));
   font-family: 'Inter', 'Roboto', sans-serif;
 }
 
@@ -18,14 +19,14 @@
    2. CARD PRINCIPAL
    ============================================================ */
 .auth-card {
-  width: 420px;
-  background: rgba(28, 28, 28, 0.88);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-  border-radius: 16px;
+  width: min(480px, 92vw);
+  background: linear-gradient(135deg, rgba(18, 18, 18, 0.88), rgba(25, 25, 25, 0.95));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 140, 0, 0.15);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.68), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  border-radius: 20px;
   padding: 2rem;
-  color: #e0e0e0;
+  color: #ece7de;
 
   p {
     margin: 0.3rem 0;
@@ -35,7 +36,7 @@
     strong {
       margin-right: 0.35rem;
       font-weight: 700;
-      color: #f5b17a;
+      color: #ffbf7c;
     }
   }
 }
@@ -46,9 +47,9 @@
 .auth-title {
   text-align: center;
   font-size: 1.6rem;
-  color: #ab5820;
+  color: #ff9b3d;
   margin-bottom: 1.4rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ============================================================
@@ -87,7 +88,7 @@
 
   /* focus */
   ::ng-deep .mat-form-field.mat-focused .mat-form-field-outline-thick {
-    stroke: rgba(224, 122, 47, 0.9) !important;
+    stroke: rgba(255, 140, 0, 0.9) !important;
   }
 
   ::ng-deep .mat-input-element::placeholder {
@@ -110,36 +111,53 @@
   margin-top: 1rem;
 
   button {
-    font-weight: 500;
-    letter-spacing: 0.4px;
-    transition: all 0.22s ease;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    transition: all 0.25s ease;
+    border-radius: 12px;
+    padding: 0.68rem 1.2rem;
   }
 
   /* LOGIN - NARANJA */
   button[color='primary'] {
-    background: rgba(255, 123, 34, 0.88);
+    background: #ff8c00;
     color: #fff;
-    box-shadow: 0 3px 10px rgba(255, 123, 34, 0.22);
+    border: 1px solid rgba(255, 140, 0, 0.9);
+    box-shadow: 0 6px 18px rgba(255, 140, 0, 0.32);
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(255, 123, 34, 0.15); 
+      transform: translateY(-1px);
+      background: rgba(255, 140, 0, 0.85);
+      box-shadow: 0 8px 24px rgba(255, 140, 0, 0.45);
     }
   }
 
-  /*otros botones (inscribir, invitados, etc)*/
   button[mat-button] {
-    color: #cdcdcd;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #d9d4cc;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
 
     &:hover {
-      color: #ffffff;
       background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      border-color: rgba(255, 140, 0, 0.3);
     }
   }
 }
+
+/*otros botones (inscribir, invitados, etc)*/
+button[mat-button] {
+  color: #cdcdcd;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  &:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
 
 /* ============================================================
    6. TOKEN SECTION
@@ -153,20 +171,38 @@
   margin-top: 1.2rem;
 
   h3 {
-    color: #f1904e;
+    color: #ff9b3d;
     font-size: 1.05rem;
     margin-bottom: 0.8rem;
     text-align: center;
-    font-weight: 600;
+    font-weight: 700;
   }
 
 }
+
+.auth-card, .mat-dialog-container {
+  border: 1px solid rgba(255, 140, 0, 0.2) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.7) !important;
+  background: linear-gradient(145deg, rgba(20,20,20,0.95), rgba(11,11,11,0.94)) !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.auth-card::before, .mat-dialog-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255,140,0,0.12), transparent 45%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
 
 .token-field {
     ::ng-deep .mat-form-field-flex {
       justify-content: center !important;
       background: rgba(255, 255, 255, 0.035);
-  }
+    }
 
     /* TOKEN READONLY — versión FINAL que prevalece */
     ::ng-deep input[readonly].mat-input-element {
@@ -175,39 +211,38 @@
       font-family: monospace;
       font-weight: 600;
       letter-spacing: 0.4px;
-  }
+    }
 }
   
-  .role-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 0.35rem;
-    padding: 2px 10px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    letter-spacing: 0.4px;
-    border: 1px solid transparent;
-  
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.35rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.4px;
+  border: 1px solid transparent;
 
-    &--admin {
-      color: #ffd2af;
-      background: rgba(255, 123, 34, 0.2);
-      border-color: rgba(255, 123, 34, 0.45);
-    }
-
-    &--guest {
-      color: #cbe7ff;
-      background: rgba(74, 144, 226, 0.16);
-      border-color: rgba(74, 144, 226, 0.4);
-    }
-
-    &--neutral {
-      color: #d0d0d0;
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.18);
-    }
+  &--admin {
+    color: #ffd2af;
+    background: rgba(255, 140, 0, 0.15);
+    border-color: rgba(255, 140, 0, 0.4);
   }
+
+  &--guest {
+    color: #cbe7ff;
+    background: rgba(74, 144, 226, 0.16);
+    border-color: rgba(74, 144, 226, 0.4);
+  }
+
+  &--neutral {
+    color: #d0d0d0;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
 
 
 
@@ -230,26 +265,26 @@
 /* BOTONES TOKEN ORIGINALES */
 button[color='accent'] {
   background: transparent;
-  border: 1px solid #ff7b22;
-  color: #ff7b22;
+  border: 1px solid #ff8c00;
+  color: #ff8c00;
   padding: 4px 10px;
   font-size: 0.75rem;
   border-radius: 6px;
 
   &:hover {
-    background: rgba(255, 123, 34, 0.1);
+    background: rgba(255, 140, 0, 0.1);
   }
 }
 
 button[color='warn'] {
   background: transparent;
-  border: 1px solid #ff4444;
-  color: #ff4444;
+  border: 1px solid #ff4d4f;
+  color: #ff4d4f;
   padding: 4px 10px;
   font-size: 0.75rem;
   border-radius: 6px;
 
   &:hover {
-    background: rgba(255, 68, 68, 0.1);
+    background: rgba(255, 77, 79, 0.1);
   }
 }

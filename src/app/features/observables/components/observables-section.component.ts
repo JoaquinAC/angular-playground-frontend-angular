@@ -1,10 +1,17 @@
-import { Component, OnInit , OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable,Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { ObervablesLabService } from 'src/app/features/observables/data/services/observables-lab.service';
 import { User } from '../data/models/User.model';
 import { fadeSlideInAnimation } from 'src/app/shared/animations/fade-slide-in.animation';
 import { ObservablesFlowModalComponent } from './flow-modal/observables-flow-modal.component';
+
+interface DynamicSubscriber {
+  id: number;
+  type: 'behavior' | 'replay';
+  active: boolean;
+  values: string[];
+}
 
 @Component({
   selector: 'app-observables-section',
@@ -12,10 +19,15 @@ import { ObservablesFlowModalComponent } from './flow-modal/observables-flow-mod
   styleUrls: ['./observables-section.component.scss'],
   animations: [fadeSlideInAnimation],
 })
-export class ObservablesSectionComponent implements OnInit,OnDestroy {
-
+export class ObservablesSectionComponent implements OnInit, OnDestroy {
   user$: Observable<User>;
   usersHistory$: Observable<User[]>;
+
+  // Valor central y buffer para la nueva demostración
+  sharedValue$: Observable<string>;
+  sharedReplay$: Observable<string[]>;
+
+  newValue = '';
 
   latestUserLabel = 'Sin emisiones recientes';
   latestUserNarrative = 'Todavía no hubo cambios compartidos en el estado global.';
@@ -38,12 +50,19 @@ export class ObservablesSectionComponent implements OnInit,OnDestroy {
   private subs = new Subscription();
   private previousHistoryLength = 0;
 
+  subscribers: DynamicSubscriber[] = [];
+  private subscriberSubs = new Map<number, Subscription>();
+  private nextSubscriberId = 1;
+
   constructor(
     private labService: ObervablesLabService,
     private dialog: MatDialog,
   ) {
     this.user$ = this.labService.user$;
     this.usersHistory$ = this.labService.usersHistory$;
+
+    this.sharedValue$ = this.labService.sharedValue$;
+    this.sharedReplay$ = this.labService.sharedReplayBuffer$;
   }
 
   ngOnInit(): void {
@@ -52,6 +71,78 @@ export class ObservablesSectionComponent implements OnInit,OnDestroy {
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
+    this.subscriberSubs.forEach((sub) => sub.unsubscribe());
+    this.subscriberSubs.clear();
+  }
+
+  emitValue(): void {
+    const value = this.newValue.trim();
+    if (!value) {
+      return;
+    }
+
+    this.labService.emitValue(value);
+    this.newValue = '';
+
+    // Cada suscriptor activo recibe el nuevo valor automáticamente desde el subject.
+  }
+
+  createSubscriber(type: 'behavior' | 'replay'): void {
+    const subscriber: DynamicSubscriber = {
+      id: this.nextSubscriberId++,
+      type,
+      active: false,
+      values: [],
+    };
+
+    this.subscribers.push(subscriber);
+    this.subscribeSubscriber(subscriber);
+  }
+
+  toggleSubscriber(subscriber: DynamicSubscriber): void {
+    if (subscriber.active) {
+      this.unsubscribeSubscriber(subscriber);
+    } else {
+      this.subscribeSubscriber(subscriber);
+    }
+  }
+
+  removeSubscriber(subscriber: DynamicSubscriber): void {
+    this.unsubscribeSubscriber(subscriber);
+    this.subscribers = this.subscribers.filter((item) => item.id !== subscriber.id);
+  }
+
+  private subscribeSubscriber(subscriber: DynamicSubscriber): void {
+    if (subscriber.active) {
+      return;
+    }
+
+    const source$ =
+      subscriber.type === 'behavior'
+        ? this.labService.sharedValue$
+        : this.labService.sharedReplayStream$;
+
+    const sub = source$.subscribe((payload) => {
+      if (!subscriber.active) {
+        return;
+      }
+
+      if (typeof payload === 'string') {
+        subscriber.values.push(payload);
+      }
+    });
+
+    this.subscriberSubs.set(subscriber.id, sub);
+    subscriber.active = true;
+  }
+
+  private unsubscribeSubscriber(subscriber: DynamicSubscriber): void {
+    const sub = this.subscriberSubs.get(subscriber.id);
+    if (sub) {
+      sub.unsubscribe();
+      this.subscriberSubs.delete(subscriber.id);
+    }
+    subscriber.active = false;
   }
 
   updateUser(): void {
